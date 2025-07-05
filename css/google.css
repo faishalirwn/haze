@@ -17,6 +17,7 @@ html:not(.show-ratings) g-review-stars,
 html:not(.show-ratings) g-review-stars ~ span,
 html:not(.show-ratings) .a19vA,
 html:not(.show-ratings) .uo4vr,
+html:not(.show-ratings) .tsAqzf,
 html:not(.show-ratings) .QU4hqb:has(.gTPtFb),
 html:not(.show-ratings) [data-attrid="kc:/ugc:user_reviews"],
 html:not(.show-ratings) [data-attrid="kc:/film/film:reviews"],
@@ -29,10 +30,12 @@ g-review-stars:hover,
 g-review-stars:hover ~ span,
 html:not(.show-ratings) .a19vA:hover,
 html:not(.show-ratings) .uo4vr:hover,
+html:not(.show-ratings) .tsAqzf:hover,
 html:not(.show-ratings) .QU4hqb:has(.gTPtFb):hover,
 [data-attrid="kc:/ugc:user_reviews"]:hover,
 [data-attrid="kc:/film/film:reviews"]:hover,
 [data-attrid="kc:/book/book:reviews"]:hover,
 [data-attrid="kc:/tv/tv_program:reviews"]:hover {
     filter: blur(0) !important;
+    transition-delay: 0.3s !important;
 }
