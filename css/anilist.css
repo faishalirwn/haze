@@ -1,10 +1,15 @@
-html:not(.show-ratings) .chart.media-score-distribution,
+html:not(.show-ratings) .chart.media-score-distribution .ct-series {
+    visibility: hidden;
+}
+html:not(.show-ratings) .chart.media-score-distribution:hover .ct-series {
+    visibility: visible !important;
+    transition-delay: 0.3s !important;
+}
 html:not(.show-ratings) .score,
 html:not(.show-ratings) .scoreLabel {
     filter: blur(8px);
     transition: filter 0.2s;
 }
-html:not(.show-ratings) .chart.media-score-distribution:hover,
 html:not(.show-ratings) .score:hover,
 html:not(.show-ratings) .scoreLabel:hover {
     filter: blur(0) !important;
