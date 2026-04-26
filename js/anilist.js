@@ -1,0 +1,1 @@
+initVendor('anilist');

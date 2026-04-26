@@ -235,6 +235,11 @@
             "matches": ["*://*.trakt.tv/*"],
             "js": ["js/common.js", "js/trakt.js"],
             "css": ["css/trakt.css"]
+        },
+        {
+            "matches": ["*://*.anilist.co/*"],
+            "js": ["js/common.js", "js/anilist.js"],
+            "css": ["css/anilist.css"]
         }
     ],
     "permissions": [
@@ -432,6 +437,7 @@
         "*://*.goodreads.com/",
         "*://*.myanimelist.net/",
         "*://*.letterboxd.com/",
-        "*://*.trakt.tv/"
+        "*://*.trakt.tv/",
+        "*://*.anilist.co/"
     ]
 }

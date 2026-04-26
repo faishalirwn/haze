@@ -11,6 +11,7 @@
         'letterboxd': false,
         'google':     false,
         'trakt':      false,
+        'anilist':    false,
     };
 
     // Saves toggle values in browser.storage

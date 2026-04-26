@@ -2,7 +2,7 @@
 description: "Scaffold all files needed to add a new site to the Hide Ratings extension"
 argument-hint: "Site display name, vendor key, and URL pattern(s) — e.g. 'Trakt, trakt, *://trakt.tv/*'"
 agent: "agent"
-tools: [fetch]
+tools: [agent, browser, edit, execute, search, web, todo, vscode]
 ---
 
 Add support for hiding ratings on a new site in this Chrome/Firefox extension.
@@ -41,20 +41,31 @@ initVendor('{vendor}');
 
 ### 2. Create `css/{vendor}.css`
 
-Use the selectors discovered in step 0. See [css/imdb.css](../../css/imdb.css) for a real example.
+Use the selectors discovered in step 0. See [css/imdb.css](../../css/imdb.css) for a hide example and [css/trakt.css](../../css/trakt.css) for a blur example.
 
+Choose a hiding style based on the site's UX:
+- **Blur** (preferred for rating scores inline with other content — lets the user reveal on hover):
 ```css
 html:not(.show-ratings) .selector-a,
-html:not(.show-ratings) [data-testid="rating-widget"],
-html:not(.show-ratings) [class*="RatingContainer"] {
+html:not(.show-ratings) [data-testid="rating-widget"] {
+    filter: blur(8px);
+    transition: filter 0.2s;
+}
+html:not(.show-ratings) .selector-a:hover,
+html:not(.show-ratings) [data-testid="rating-widget"]:hover {
+    filter: blur(0) !important;
+    transition-delay: 0.3s !important;
+}
+```
+- **Hide** (for standalone rating widgets or sidebar blocks where removal doesn't break layout):
+```css
+html:not(.show-ratings) .selector-a,
+html:not(.show-ratings) [data-testid="rating-widget"] {
     display: none !important;
 }
 ```
-
-Rules:
-- Use `display: none !important` by default
-- Use `visibility: hidden !important` only when removing the element would break page layout
-- Group all selectors into a single rule block
+- Use `visibility: hidden !important` only when `display: none` breaks page layout.
+- Group all selectors into a single rule block (both the blur and hover rules share the same selector list).
 
 ### 3. Update `options.html`
 
