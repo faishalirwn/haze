@@ -7,5 +7,18 @@ html:not(.show-ratings) .filmstat-lists,
 html:not(.show-ratings) .filmstat-likes,
 html:not(.show-ratings) .filmstat-top250,
 html:not(.show-ratings) .rating {
-    display: none !important;
+    filter: blur(8px);
+    transition: filter 0.2s;
+}
+html:not(.show-ratings) .poster-meta:hover,
+html:not(.show-ratings) .poster-views:hover,
+html:not(.show-ratings) .poster-likes:hover,
+html:not(.show-ratings) .ratings-histogram-chart:hover,
+html:not(.show-ratings) .filmstat-watches:hover,
+html:not(.show-ratings) .filmstat-lists:hover,
+html:not(.show-ratings) .filmstat-likes:hover,
+html:not(.show-ratings) .filmstat-top250:hover,
+html:not(.show-ratings) .rating:hover {
+    filter: blur(0) !important;
+    transition-delay: 0.3s !important;
 }

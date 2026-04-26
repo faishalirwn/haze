@@ -43,8 +43,9 @@ initVendor('{vendor}');
 
 Use the selectors discovered in step 0. See [css/imdb.css](../../css/imdb.css) for a hide example and [css/trakt.css](../../css/trakt.css) for a blur example.
 
-Choose a hiding style based on the site's UX:
-- **Blur** (preferred for rating scores inline with other content — lets the user reveal on hover):
+All sites use **blur** — it hides the rating but lets the user reveal it on hover. Use `display: none` only if blur causes severe layout breakage.
+
+- **Blur** (standard for all sites):
 ```css
 html:not(.show-ratings) .selector-a,
 html:not(.show-ratings) [data-testid="rating-widget"] {

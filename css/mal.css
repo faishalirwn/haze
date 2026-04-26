@@ -26,7 +26,20 @@ html:not(.show-ratings) .information .scormem,
 html:not(.show-ratings) .anime-detail-header-stats .stats-block:before,
 html:not(.show-ratings) .anime-detail-header-stats .stats-block .di-ib.ml12.pl20.pt8,
 html:not(.show-ratings) .anime-detail-header-stats .stats-block .score {
-    display: none !important;
+    filter: blur(8px);
+    transition: filter 0.2s;
+}
+html:not(.show-ratings) [itemprop="aggregateRating"]:hover,
+html:not(.show-ratings) .bottom-navi .icon-reaction:hover,
+html:not(.show-ratings) .mal-ratings-wrapper:hover,
+html:not(.show-ratings) #myinfo_score:hover,
+html:not(.show-ratings) td .js-top-ranking-score-col:hover,
+html:not(.show-ratings) .information .scormem:hover,
+html:not(.show-ratings) .anime-detail-header-stats .stats-block:before:hover,
+html:not(.show-ratings) .anime-detail-header-stats .stats-block .di-ib.ml12.pl20.pt8:hover,
+html:not(.show-ratings) .anime-detail-header-stats .stats-block .score:hover {
+    filter: blur(0) !important;
+    transition-delay: 0.3s !important;
 }
 
 html:not(.show-ratings) .ranking-unit .info {

@@ -20,5 +20,31 @@ html:not(.show-ratings) [itemprop="aggregateRating"],
 html:not(.show-ratings) .avg_rating,
 html:not(.show-ratings) th.rating,
 html:not(.show-ratings) .minirating {
-    display: none !important;
+    filter: blur(8px);
+    transition: filter 0.2s;
+}
+html:not(.show-ratings) #bookMeta:hover,
+html:not(.show-ratings) #reviews #reviewControls .reviewControls--left:first-child:hover,
+html:not(.show-ratings) #reviews #reviewControls .reviewControls__ratingDetails:hover,
+html:not(.show-ratings) [onclick*="score_explanation"]:hover,
+html:not(.show-ratings) [onclick*="score_explanation"] + .greyText:hover,
+html:not(.show-ratings) .staticStars:hover,
+html:not(.show-ratings) .communityRating:hover,
+html:not(.show-ratings) .AverageRating:hover,
+html:not(.show-ratings) .AggregateRating:hover,
+html:not(.show-ratings) .RatingStatistics:hover,
+html:not(.show-ratings) .ReviewsSectionStatistics:hover,
+html:not(.show-ratings) .BookRatingStars:hover,
+html:not(.show-ratings) .BookStatistics__ratingStatistics:hover,
+html:not(.show-ratings) .BookStatistics__histogram:hover,
+html:not(.show-ratings) .BookListItemRating__column.BookListItemRating__column--secondary:hover,
+html:not(.show-ratings) .RatingStars:hover,
+html:not(.show-ratings) .SocialSignalsSection:hover,
+html:not(.show-ratings) .SocialSignalsSection + .Divider:hover,
+html:not(.show-ratings) [itemprop="aggregateRating"]:hover,
+html:not(.show-ratings) .avg_rating:hover,
+html:not(.show-ratings) th.rating:hover,
+html:not(.show-ratings) .minirating:hover {
+    filter: blur(0) !important;
+    transition-delay: 0.3s !important;
 }
