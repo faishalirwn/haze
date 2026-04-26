@@ -10,6 +10,7 @@
         'goodreads':  false,
         'letterboxd': false,
         'google':     false,
+        'trakt':      false,
     };
 
     // Saves toggle values in browser.storage

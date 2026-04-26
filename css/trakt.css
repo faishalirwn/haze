@@ -1,0 +1,18 @@
+html:not(.show-ratings) .trakt-summary-card-rating,
+html:not(.show-ratings) .trakt-summary-ratings,
+html:not(.show-ratings) .trakt-user-rating,
+html:not(.show-ratings) .metadata .percentage,
+html:not(.show-ratings) li.trakt-rating,
+html:not(.show-ratings) .corner-rating {
+    filter: blur(8px);
+    transition: filter 0.2s;
+}
+html:not(.show-ratings) .trakt-summary-card-rating:hover,
+html:not(.show-ratings) .trakt-summary-ratings:hover,
+html:not(.show-ratings) .trakt-user-rating:hover,
+html:not(.show-ratings) .metadata .percentage:hover,
+html:not(.show-ratings) li.trakt-rating:hover,
+html:not(.show-ratings) .corner-rating:hover {
+    filter: blur(0) !important;
+    transition-delay: 0.3s !important;
+}

@@ -230,6 +230,11 @@
             "matches": ["*://*.letterboxd.com/*"],
             "js": ["js/common.js", "js/letterboxd.js"],
             "css": ["css/letterboxd.css"]
+        },
+        {
+            "matches": ["*://*.trakt.tv/*"],
+            "js": ["js/common.js", "js/trakt.js"],
+            "css": ["css/trakt.css"]
         }
     ],
     "permissions": [
@@ -426,6 +431,7 @@
         "*://*.imdb.com/",
         "*://*.goodreads.com/",
         "*://*.myanimelist.net/",
-        "*://*.letterboxd.com/"
+        "*://*.letterboxd.com/",
+        "*://*.trakt.tv/"
     ]
 }
