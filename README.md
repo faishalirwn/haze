@@ -1,7 +1,7 @@
 Hide ratings
 ======================================================================
 
-Simple extension to hide/blur the rating bars from **IMDB**, **Goodreads**, **MyAnimeList** and **Letterboxd** search results, lists and reviews.
+Simple extension to blur the ratings from **IMDB**, **Goodreads**, **MyAnimeList**, **Letterboxd**, **Google Search**, **Trakt**, and **AniList** — on search results, lists, and detail pages. Hover over a blurred rating to reveal it.
 
 #### Installation
 
