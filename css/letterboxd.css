@@ -6,7 +6,8 @@ html:not(.show-ratings) .filmstat-watches,
 html:not(.show-ratings) .filmstat-lists,
 html:not(.show-ratings) .filmstat-likes,
 html:not(.show-ratings) .filmstat-top250,
-html:not(.show-ratings) .rating {
+html:not(.show-ratings) .rating,
+html:not(.show-ratings) .inline-rating {
     filter: blur(8px);
     transition: filter 0.2s;
 }
@@ -18,7 +19,8 @@ html:not(.show-ratings) .filmstat-watches:hover,
 html:not(.show-ratings) .filmstat-lists:hover,
 html:not(.show-ratings) .filmstat-likes:hover,
 html:not(.show-ratings) .filmstat-top250:hover,
-html:not(.show-ratings) .rating:hover {
+html:not(.show-ratings) .rating:hover,
+html:not(.show-ratings) .inline-rating:hover {
     filter: blur(0) !important;
     transition-delay: 0.3s !important;
 }
