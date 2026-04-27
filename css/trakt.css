@@ -16,3 +16,11 @@ html:not(.show-ratings) .corner-rating:hover {
     filter: blur(0) !important;
     transition-delay: 0.3s !important;
 }
+html:not(.show-ratings) .sentiments-wrapper {
+    filter: blur(8px);
+    transition: filter 0.2s;
+}
+html:not(.show-ratings) .sentiments-wrapper:hover {
+    filter: blur(0) !important;
+    transition-delay: 0.3s !important;
+}
