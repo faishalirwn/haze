@@ -6,12 +6,14 @@ html:not(.show-ratings) .chart.media-score-distribution:hover .ct-series {
     transition-delay: 0.3s !important;
 }
 html:not(.show-ratings) .score,
-html:not(.show-ratings) .scoreLabel {
+html:not(.show-ratings) .scoreLabel,
+html:not(.show-ratings) .follow > span {
     filter: blur(8px);
     transition: filter 0.2s;
 }
 html:not(.show-ratings) .score:hover,
-html:not(.show-ratings) .scoreLabel:hover {
+html:not(.show-ratings) .scoreLabel:hover,
+html:not(.show-ratings) .follow > span:hover {
     filter: blur(0) !important;
     transition-delay: 0.3s !important;
 }
