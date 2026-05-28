@@ -1,7 +1,7 @@
 {
     "manifest_version": 3,
     "name": "Hide Ratings",
-    "description": "Hide/blur the rating elements from media sites, search results.",
+    "description": "Hide/blur the rating elements from media sites and search results.",
     "version": "1.0.0",
     "action": {
         "default_icon": "images/icon48.png",
