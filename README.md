@@ -1,13 +1,16 @@
-Hide ratings
-======================================================================
+# Hide Ratings
 
-Simple extension to blur the ratings from **IMDB**, **Goodreads**, **MyAnimeList**, **Letterboxd**, **Google Search**, **Trakt**, and **AniList** — on search results, lists, and detail pages. Hover over a blurred rating to reveal it.
+[![Available in the Chrome Web Store](https://storage.googleapis.com/web-dev-uploads/image/WlD8wC6g8khYWPJUsQceQkhXSlv1/UV4C4ybeBTsZt43U4xis.png)](https://github.com/kasusoba/hide-ratings)
 
-#### Installation
+Hides ratings on search results, lists, and detail pages. Hover over a hidden rating to reveal it.
 
-- Via [Chrome Web Store](https://chrome.google.com/webstore/detail/hide-ratings-imdb-goodrea/cnjhjnjbpedipoamajojlbfakbadgiam)
+Supported Sites:
+- IMDB
+- Goodreads
+- MyAnimeList
+- Letterboxd
+- Google Search
+- Trakt
+- AniList
 
-- Manually:
-  1. Download and extract the project archive.
-  2. Open your browser and navigate to `chrome://extensions`
-  3. Check the `Developer mode` checkbox and click on `Load unpacked extension...` button
+> Forked from [ganigeorgiev/hide-ratings-extension](https://github.com/ganigeorgiev/hide-ratings-extension) with modifications.
