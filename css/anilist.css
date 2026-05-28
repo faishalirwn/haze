@@ -8,14 +8,14 @@ html:not(.show-ratings) .chart.media-score-distribution:hover .ct-series {
 html:not(.show-ratings) .score,
 html:not(.show-ratings) .scoreLabel,
 html:not(.show-ratings) .follow > span,
-html:not(.show-ratings) .data-set .value {
+html:not(.show-ratings) .score-value {
     filter: blur(8px);
     transition: filter 0.2s;
 }
 html:not(.show-ratings) .score:hover,
 html:not(.show-ratings) .scoreLabel:hover,
 html:not(.show-ratings) .follow > span:hover,
-html:not(.show-ratings) .data-set .value:hover {
+html:not(.show-ratings) .score-value:hover {
     filter: blur(0) !important;
     transition-delay: 0.3s !important;
 }
