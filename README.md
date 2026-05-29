@@ -1,6 +1,6 @@
 # Hide Ratings
 
-[![Available in the Chrome Web Store](https://storage.googleapis.com/web-dev-uploads/image/WlD8wC6g8khYWPJUsQceQkhXSlv1/UV4C4ybeBTsZt43U4xis.png)](https://github.com/kasusoba/hide-ratings)
+[![Chrome](https://img.shields.io/chrome-web-store/users/djfdaikneamfdgjpdhclphkanmccndep.svg?style=flat-square&label=Chrome&logo=google%20chrome&logoColor=white)](https://chrome.google.com/webstore/detail/mal-sync/djfdaikneamfdgjpdhclphkanmccndep?hl=en)
 
 Hides ratings on search results, lists, and detail pages. Hover over a hidden rating to reveal it.
 
