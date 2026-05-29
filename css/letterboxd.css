@@ -1,7 +1,9 @@
+/* Letterboxd is always dark — use a matching dark scratchcard */
+:root { --scratchcard-bg: #2c2c2c; }
+
 html:not(.show-ratings) .poster-meta,
 html:not(.show-ratings) .poster-views,
 html:not(.show-ratings) .poster-likes,
-html:not(.show-ratings) .ratings-histogram-chart,
 html:not(.show-ratings) .filmstat-watches,
 html:not(.show-ratings) .filmstat-lists,
 html:not(.show-ratings) .filmstat-likes,
@@ -14,7 +16,6 @@ html:not(.show-ratings) .inline-rating {
 html:not(.show-ratings) .poster-meta:hover,
 html:not(.show-ratings) .poster-views:hover,
 html:not(.show-ratings) .poster-likes:hover,
-html:not(.show-ratings) .ratings-histogram-chart:hover,
 html:not(.show-ratings) .filmstat-watches:hover,
 html:not(.show-ratings) .filmstat-lists:hover,
 html:not(.show-ratings) .filmstat-likes:hover,
@@ -23,4 +24,74 @@ html:not(.show-ratings) .rating:hover,
 html:not(.show-ratings) .inline-rating:hover {
     filter: blur(0) !important;
     transition-delay: 0.3s !important;
+}
+html:not(.show-ratings) .rating-histogram {
+    position: relative;
+    filter: blur(8px);
+    transition: filter 0.2s;
+}
+html:not(.show-ratings) .rating-histogram::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: var(--scratchcard-bg);
+    border-radius: 4px;
+    pointer-events: none;
+    opacity: 1;
+    transition: opacity 0s;
+}
+html:not(.show-ratings) .rating-histogram:hover {
+    filter: blur(0) !important;
+    transition-delay: 0.3s;
+}
+html:not(.show-ratings) .rating-histogram:hover::after {
+    opacity: 0;
+    transition: opacity 0.2s;
+    transition-delay: 0.3s;
+}
+/* Scratchcard overlay for inline star ratings — hides star count from width/content */
+html:not(.show-ratings) .inline-rating {
+    position: relative;
+    display: inline-flex;
+}
+html:not(.show-ratings) .inline-rating .glyph.-rating {
+    width: 75px !important;
+}
+html:not(.show-ratings) .inline-rating::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    min-width: 75px;
+    background: var(--scratchcard-bg);
+    border-radius: 2px;
+    pointer-events: none;
+    opacity: 1;
+    transition: opacity 0s;
+}
+html:not(.show-ratings) .inline-rating:hover::after {
+    opacity: 0;
+    transition: opacity 0.2s;
+    transition-delay: 0.3s;
+}
+/* Scratchcard overlay for text star ratings in lists/diary */
+html:not(.show-ratings) span.rating {
+    position: relative;
+    display: inline-block;
+    min-width: 5em;
+    overflow: hidden;
+}
+html:not(.show-ratings) span.rating::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: var(--scratchcard-bg);
+    border-radius: 2px;
+    pointer-events: none;
+    opacity: 1;
+    transition: opacity 0s;
+}
+html:not(.show-ratings) span.rating:hover::after {
+    opacity: 0;
+    transition: opacity 0.2s;
+    transition-delay: 0.3s;
 }

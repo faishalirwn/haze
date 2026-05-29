@@ -208,38 +208,38 @@
                 "*://www.google.co.zw/search*"
             ],
             "js": ["js/common.js", "js/google.js"],
-            "css": ["css/google.css"],
+            "css": ["css/common.css", "css/google.css"],
             "run_at": "document_end"
         },
         {
             "matches": ["*://*.imdb.com/*"],
             "js": ["js/common.js", "js/imdb.js"],
-            "css": ["css/imdb.css"]
+            "css": ["css/common.css", "css/imdb.css"]
         },
         {
             "matches": ["*://*.myanimelist.net/*"],
             "js": ["js/common.js", "js/mal.js"],
-            "css": ["css/mal.css"]
+            "css": ["css/common.css", "css/mal.css"]
         },
         {
             "matches": ["*://*.goodreads.com/*"],
             "js": ["js/common.js", "js/goodreads.js"],
-            "css": ["css/goodreads.css"]
+            "css": ["css/common.css", "css/goodreads.css"]
         },
         {
             "matches": ["*://*.letterboxd.com/*"],
             "js": ["js/common.js", "js/letterboxd.js"],
-            "css": ["css/letterboxd.css"]
+            "css": ["css/common.css", "css/letterboxd.css"]
         },
         {
             "matches": ["*://*.trakt.tv/*"],
             "js": ["js/common.js", "js/trakt.js"],
-            "css": ["css/trakt.css"]
+            "css": ["css/common.css", "css/trakt.css"]
         },
         {
             "matches": ["*://*.anilist.co/*"],
             "js": ["js/common.js", "js/anilist.js"],
-            "css": ["css/anilist.css"]
+            "css": ["css/common.css", "css/anilist.css"]
         }
     ],
     "permissions": [

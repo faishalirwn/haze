@@ -1,3 +1,6 @@
+/* Trakt is always dark — use a matching dark scratchcard */
+:root { --scratchcard-bg: #1a1a2e; }
+
 html:not(.show-ratings) .trakt-summary-card-rating,
 html:not(.show-ratings) .trakt-summary-ratings,
 html:not(.show-ratings) .trakt-user-rating,

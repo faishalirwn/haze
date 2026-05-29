@@ -1,3 +1,6 @@
+/* Goodreads is always light — use a matching light scratchcard */
+:root { --scratchcard-bg: #ddd; }
+
 html:not(.show-ratings) #bookMeta,
 html:not(.show-ratings) #reviews #reviewControls .reviewControls--left:first-child,
 html:not(.show-ratings) #reviews #reviewControls .reviewControls__ratingDetails,
@@ -8,7 +11,6 @@ html:not(.show-ratings) .communityRating,
 html:not(.show-ratings) .AverageRating,
 html:not(.show-ratings) .AggregateRating,
 html:not(.show-ratings) .RatingStatistics,
-html:not(.show-ratings) .ReviewsSectionStatistics,
 html:not(.show-ratings) .BookRatingStars,
 html:not(.show-ratings) .BookStatistics__ratingStatistics,
 html:not(.show-ratings) .BookStatistics__histogram,
@@ -33,7 +35,6 @@ html:not(.show-ratings) .communityRating:hover,
 html:not(.show-ratings) .AverageRating:hover,
 html:not(.show-ratings) .AggregateRating:hover,
 html:not(.show-ratings) .RatingStatistics:hover,
-html:not(.show-ratings) .ReviewsSectionStatistics:hover,
 html:not(.show-ratings) .BookRatingStars:hover,
 html:not(.show-ratings) .BookStatistics__ratingStatistics:hover,
 html:not(.show-ratings) .BookStatistics__histogram:hover,
@@ -47,4 +48,67 @@ html:not(.show-ratings) th.rating:hover,
 html:not(.show-ratings) .minirating:hover {
     filter: blur(0) !important;
     transition-delay: 0.3s !important;
+}
+/* Scratchcard overlay for stars — hides fill color/pattern completely */
+html:not(.show-ratings) .RatingStars {
+    position: relative;
+    display: inline-flex !important;
+}
+html:not(.show-ratings) .RatingStars::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    min-width: 90px;
+    background: var(--scratchcard-bg);
+    pointer-events: none;
+    opacity: 1;
+    transition: opacity 0s;
+}
+html:not(.show-ratings) .RatingStars:hover::after {
+    opacity: 0;
+    transition: opacity 0.2s;
+    transition-delay: 0.3s;
+}
+/* Scratchcard overlay for histogram bars — hides bar proportions */
+html:not(.show-ratings) .RatingsHistogram {
+    position: relative;
+    filter: blur(8px);
+    transition: filter 0.2s;
+}
+html:not(.show-ratings) .RatingsHistogram:hover {
+    filter: blur(0) !important;
+    transition-delay: 0.3s !important;
+}
+html:not(.show-ratings) .RatingsHistogram::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: var(--scratchcard-bg);
+    pointer-events: none;
+    opacity: 1;
+    transition: opacity 0s;
+}
+html:not(.show-ratings) .RatingsHistogram:hover::after {
+    opacity: 0;
+    transition: opacity 0.2s;
+    transition-delay: 0.3s;
+}
+/* Scratchcard overlay for minirating — hides star color and score text */
+html:not(.show-ratings) .minirating {
+    position: relative;
+    display: inline-block;
+}
+html:not(.show-ratings) .minirating::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: var(--scratchcard-bg);
+    pointer-events: none;
+    opacity: 1;
+    transition: opacity 0s;
+}
+html:not(.show-ratings) .minirating:hover::after {
+    opacity: 0;
+    transition: opacity 0.2s;
+    transition-delay: 0.3s;
 }

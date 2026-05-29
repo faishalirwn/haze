@@ -1,21 +1,44 @@
-html:not(.show-ratings) .chart.media-score-distribution .ct-series {
-    visibility: hidden;
+/* AniList dark (#1e2535) / light (#e8e8e8) — follows system preference */
+:root { --scratchcard-bg: #1e2535; }
+@media (prefers-color-scheme: light) {
+    :root { --scratchcard-bg: #e8e8e8; }
 }
-html:not(.show-ratings) .chart.media-score-distribution:hover .ct-series {
-    visibility: visible !important;
+
+html:not(.show-ratings) .chart.media-score-distribution {
+    position: relative;
+    filter: blur(8px);
+    transition: filter 0.2s;
+}
+html:not(.show-ratings) .chart.media-score-distribution::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: var(--scratchcard-bg);
+    border-radius: 4px;
+    pointer-events: none;
+    opacity: 1;
+    transition: opacity 0s;
+}
+html:not(.show-ratings) .chart.media-score-distribution:hover {
+    filter: blur(0) !important;
     transition-delay: 0.3s !important;
+}
+html:not(.show-ratings) .chart.media-score-distribution:hover::after {
+    opacity: 0;
+    transition: opacity 0.2s;
+    transition-delay: 0.3s;
 }
 html:not(.show-ratings) .score,
 html:not(.show-ratings) .scoreLabel,
 html:not(.show-ratings) .follow > span,
 html:not(.show-ratings) .score-value {
-    filter: blur(8px);
+    filter: blur(8px) grayscale(1);
     transition: filter 0.2s;
 }
 html:not(.show-ratings) .score:hover,
 html:not(.show-ratings) .scoreLabel:hover,
 html:not(.show-ratings) .follow > span:hover,
 html:not(.show-ratings) .score-value:hover {
-    filter: blur(0) !important;
+    filter: blur(0) grayscale(0) !important;
     transition-delay: 0.3s !important;
 }

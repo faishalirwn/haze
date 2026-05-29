@@ -1,3 +1,6 @@
+/* IMDB is always light */
+:root { --scratchcard-bg: #e0e0e0; }
+
 html:not(.show-ratings) .ratings-bar,
 html:not(.show-ratings) .ratings_wrapper,
 html:not(.show-ratings) .titleReviewBar,
@@ -22,6 +25,9 @@ html:not(.show-ratings) [data-testid="hero-rating-bar__popularity"],
 html:not(.show-ratings) [data-testid="reviewContent-all-reviews"] {
     filter: blur(8px);
     transition: filter 0.2s;
+}
+html:not(.show-ratings) .ipc-rating-star--imdb {
+    filter: blur(24px)
 }
 html:not(.show-ratings) .ratings-bar:hover,
 html:not(.show-ratings) .ratings_wrapper:hover,
@@ -50,4 +56,40 @@ html:not(.show-ratings) [data-testid="reviewContent-all-reviews"]:hover {
 }
 html:not(.show-ratings) .ratingColumn {
     visibility: hidden !important;
+}
+/* Grayscale to hide color-coded indicators (popularity arrows, metascore bg) */
+html:not(.show-ratings) [data-testid="hero-rating-bar__popularity"],
+html:not(.show-ratings) .metacritic-score-box {
+    filter: blur(8px) grayscale(1);
+    transition: filter 0.2s;
+}
+html:not(.show-ratings) [data-testid="hero-rating-bar__popularity"]:hover,
+html:not(.show-ratings) .metacritic-score-box:hover {
+    filter: blur(0) grayscale(0) !important;
+    transition-delay: 0.3s !important;
+}
+/* Scratchcard + blur for rating histogram */
+html:not(.show-ratings) [data-testid="rating-histogram-chart"] {
+    position: relative;
+    filter: blur(8px);
+    transition: filter 0.2s;
+}
+html:not(.show-ratings) [data-testid="rating-histogram-chart"]::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: var(--scratchcard-bg);
+    border-radius: 4px;
+    pointer-events: none;
+    opacity: 1;
+    transition: opacity 0s;
+}
+html:not(.show-ratings) [data-testid="rating-histogram-chart"]:hover {
+    filter: blur(0) !important;
+    transition-delay: 0.3s !important;
+}
+html:not(.show-ratings) [data-testid="rating-histogram-chart"]:hover::after {
+    opacity: 0;
+    transition: opacity 0.2s;
+    transition-delay: 0.3s;
 }

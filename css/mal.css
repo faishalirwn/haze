@@ -35,7 +35,6 @@ html:not(.show-ratings) .mal-ratings-wrapper:hover,
 html:not(.show-ratings) #myinfo_score:hover,
 html:not(.show-ratings) td .js-top-ranking-score-col:hover,
 html:not(.show-ratings) .information .scormem:hover,
-html:not(.show-ratings) .anime-detail-header-stats .stats-block:before:hover,
 html:not(.show-ratings) .anime-detail-header-stats .stats-block .di-ib.ml12.pl20.pt8:hover,
 html:not(.show-ratings) .anime-detail-header-stats .stats-block .score:hover {
     filter: blur(0) !important;
@@ -48,4 +47,25 @@ html:not(.show-ratings) .ranking-unit .info {
 }
 .ranking-unit .info:hover {
     filter: blur(0) !important;
+}
+/* Blur-only for friend score column in stats table */
+html:not(.show-ratings) td.friend-score-cell {
+    filter: blur(8px);
+    transition: filter 0.2s;
+}
+html:not(.show-ratings) td.friend-score-cell:hover {
+    filter: blur(0) !important;
+    transition-delay: 0.3s !important;
+}
+/* Blur score in header search dropdown results; inline-block+fit-content
+ * shrinks the hover area to the text width so no invisible dead zone */
+html:not(.show-ratings) #topSearchResultList .extra-info {
+    display: inline-block;
+    width: fit-content;
+    filter: blur(6px);
+    transition: filter 0.2s;
+}
+html:not(.show-ratings) #topSearchResultList .extra-info:hover {
+    filter: blur(0) !important;
+    transition-delay: 0.3s !important;
 }

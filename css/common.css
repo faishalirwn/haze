@@ -1,0 +1,10 @@
+/*
+ * Shared CSS variables for the hide-ratings extension.
+ * Injected into every site before the site-specific stylesheet.
+ *
+ * --scratchcard-bg defaults to a neutral mid-gray.
+ * Each site stylesheet overrides it to match the site's theme.
+ */
+:root {
+    --scratchcard-bg: #888;
+}
