@@ -12,6 +12,7 @@
         'google':     false,
         'trakt':      false,
         'anilist':    false,
+        'hardcover':  false,
     };
 
     // Saves toggle values in browser.storage

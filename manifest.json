@@ -2,7 +2,7 @@
     "manifest_version": 3,
     "name": "Hide Ratings",
     "description": "Hide/blur the rating elements from media sites and search results.",
-    "version": "1.0.2",
+    "version": "1.0.3",
     "action": {
         "default_icon": "images/icon48.png",
         "default_popup": "options.html"
@@ -240,6 +240,11 @@
             "matches": ["*://*.anilist.co/*"],
             "js": ["js/common.js", "js/anilist.js"],
             "css": ["css/common.css", "css/anilist.css"]
+        },
+        {
+            "matches": ["*://*.hardcover.app/*"],
+            "js": ["js/common.js", "js/hardcover.js"],
+            "css": ["css/common.css", "css/hardcover.css"]
         }
     ],
     "permissions": [
@@ -438,6 +443,7 @@
         "*://*.myanimelist.net/",
         "*://*.letterboxd.com/",
         "*://*.trakt.tv/",
-        "*://*.anilist.co/"
+        "*://*.anilist.co/",
+        "*://*.hardcover.app/"
     ]
 }

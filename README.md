@@ -6,11 +6,12 @@ Hides ratings on search results, lists, and detail pages. Hover over a hidden ra
 
 Supported Sites:
 - IMDB
-- Goodreads
-- MyAnimeList
 - Letterboxd
-- Google Search
 - Trakt
+- MyAnimeList
 - AniList
+- Goodreads
+- Hardcover
+- Google Search
 
 > Forked from [ganigeorgiev/hide-ratings-extension](https://github.com/ganigeorgiev/hide-ratings-extension) with modifications.

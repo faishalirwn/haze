@@ -1,0 +1,90 @@
+/* Hardcover is dark-themed — use a matching dark scratchcard */
+:root { --scratchcard-bg: #1e2030; }
+
+/* Metadata line ("2003 • 2,729 Readers • 705 pages • 4.3★")
+   width:fit-content shrinks the block to text width so right:0 lands at the
+   end of the text, letting the ::after overlay cover only the trailing "• 4.3★" */
+html:not(.show-ratings) p:has(svg.fill-accent) {
+    position: relative;
+    width: fit-content;
+}
+html:not(.show-ratings) p:has(svg.fill-accent)::after {
+    content: '';
+    position: absolute;
+    right: 0;
+    top: -1px;
+    bottom: -1px;
+    width: 43px; /* covers "• 4.3 ★" at text-sm */
+    background: var(--scratchcard-bg);
+    backdrop-filter: blur(8px);
+    pointer-events: none;
+    border-radius: 2px;
+    opacity: 1;
+    transition: opacity 0s;
+}
+html:not(.show-ratings) p:has(svg.fill-accent):hover::after {
+    opacity: 0;
+    transition: opacity 0.2s;
+    transition-delay: 0.3s;
+}
+
+/* Ratings count + average rating stats row */
+html:not(.show-ratings) div.flex.flex-wrap:has(p.inline svg.fill-yellow-400) {
+    filter: blur(8px);
+    transition: filter 0.2s;
+}
+html:not(.show-ratings) div.flex.flex-wrap:has(p.inline svg.fill-yellow-400):hover {
+    filter: blur(0) !important;
+    transition-delay: 0.3s !important;
+}
+
+/* Histogram — scratchcard + blur to hide bar proportions */
+html:not(.show-ratings) div:has(> div.mt-2 svg rect[data-tooltip-id]) {
+    position: relative;
+    filter: blur(8px);
+    transition: filter 0.2s;
+}
+html:not(.show-ratings) div:has(> div.mt-2 svg rect[data-tooltip-id])::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: var(--scratchcard-bg);
+    pointer-events: none;
+    opacity: 1;
+    transition: opacity 0s;
+}
+html:not(.show-ratings) div:has(> div.mt-2 svg rect[data-tooltip-id]):hover {
+    filter: blur(0) !important;
+    transition-delay: 0.3s !important;
+}
+html:not(.show-ratings) div:has(> div.mt-2 svg rect[data-tooltip-id]):hover::after {
+    opacity: 0;
+    transition: opacity 0.2s;
+    transition-delay: 0.3s;
+}
+
+/* Star rating displays — scratchcard + blur to hide filled star count */
+html:not(.show-ratings) div.relative.flex.flex-row:has(svg.text-yellow-400) {
+    position: relative;
+    filter: blur(8px);
+    transition: filter 0.2s;
+}
+html:not(.show-ratings) div.relative.flex.flex-row:has(svg.text-yellow-400)::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    min-width: 120px;
+    background: var(--scratchcard-bg);
+    pointer-events: none;
+    opacity: 1;
+    transition: opacity 0s;
+}
+html:not(.show-ratings) div.relative.flex.flex-row:has(svg.text-yellow-400):hover {
+    filter: blur(0) !important;
+    transition-delay: 0.3s !important;
+}
+html:not(.show-ratings) div.relative.flex.flex-row:has(svg.text-yellow-400):hover::after {
+    opacity: 0;
+    transition: opacity 0.2s;
+    transition-delay: 0.3s;
+}
