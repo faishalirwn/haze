@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Haze — Options</title>
+    <link rel="stylesheet" href="./style.css" />
+  </head>
+  <body>
+    <div class="wrap">
+      <header>
+        <div class="brand"><span class="logo">◐</span> Haze</div>
+        <label class="switch" for="global">
+          <input type="checkbox" id="global" />
+          <span class="slider"></span>
+          <span class="lbl">Master switch</span>
+        </label>
+      </header>
+
+      <section>
+        <h2>Your custom rules</h2>
+        <div class="toolbar">
+          <button type="button" id="export">⭳ Export</button>
+          <button type="button" id="import">⭱ Import</button>
+          <input type="file" id="file" accept="application/json" hidden />
+          <span class="hint">Pick elements from any page via the toolbar popup.</span>
+        </div>
+        <div id="user"></div>
+      </section>
+
+      <section>
+        <h2>Built-in sites</h2>
+        <p class="hint">
+          Bundled rating rules. Toggle a whole site or individual rules off.
+        </p>
+        <div id="community"></div>
+      </section>
+
+      <footer id="version"></footer>
+    </div>
+    <script type="module" src="./main.ts"></script>
+  </body>
+</html>

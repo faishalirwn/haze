@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Haze</title>
+    <link rel="stylesheet" href="./style.css" />
+  </head>
+  <body>
+    <header>
+      <div class="brand">
+        <span class="logo">◐</span>
+        <span>Haze</span>
+      </div>
+      <label class="switch" for="global" title="Master on/off">
+        <input type="checkbox" id="global" />
+        <span class="slider"></span>
+      </label>
+    </header>
+
+    <main id="main">
+      <section class="site">
+        <div class="site-row">
+          <span class="host" id="host">—</span>
+          <label class="switch sm" for="site" title="Enable on this site">
+            <input type="checkbox" id="site" />
+            <span class="slider"></span>
+          </label>
+        </div>
+        <button type="button" class="pick" id="pick">＋ Pick element to blur</button>
+        <p class="note" id="note"></p>
+      </section>
+
+      <section class="rules">
+        <h2>Your rules here <span id="count"></span></h2>
+        <ul id="list"></ul>
+      </section>
+    </main>
+
+    <footer>
+      <button type="button" class="aslink" id="options">Manage all rules →</button>
+    </footer>
+
+    <script type="module" src="./main.ts"></script>
+  </body>
+</html>
