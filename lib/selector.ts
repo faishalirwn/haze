@@ -40,8 +40,53 @@ export function isHashedId(id: string): boolean {
   return false;
 }
 
+// Transient/interaction state classes a framework toggles on the fly. Capturing
+// these makes a selector match only while the element is hovered/focused/etc.,
+// so the rule silently stops working afterward.
+const STATE_WORDS = new Set([
+  "focus",
+  "focused",
+  "focusing",
+  "hover",
+  "hovered",
+  "active",
+  "open",
+  "opened",
+  "closed",
+  "selected",
+  "checked",
+  "disabled",
+  "expanded",
+  "collapsed",
+  "loading",
+  "dragging",
+  "pressed",
+  "current",
+  "visible",
+  "invisible",
+  "show",
+  "shown",
+  "hide",
+  "hidden",
+]);
+
+export function isStateClass(cls: string): boolean {
+  const c = cls.toLowerCase();
+  if (STATE_WORDS.has(c)) return true;
+  if (/^(is|has|js)-/.test(c)) return true;
+  if (
+    /(^|-)(focus|focused|focusing|active|hover|open|selected|disabled|expanded|collapsed|loading|dragging|pressed|current)$/.test(
+      c,
+    )
+  )
+    return true;
+  return false;
+}
+
 function stableClasses(el: Element): string[] {
-  return Array.from(el.classList).filter((c) => !isHashedClass(c));
+  return Array.from(el.classList).filter(
+    (c) => !isHashedClass(c) && !isStateClass(c),
+  );
 }
 
 export function matchCount(selector: string): number {
