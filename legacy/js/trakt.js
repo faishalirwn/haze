@@ -1,1 +1,0 @@
-initVendor('trakt');

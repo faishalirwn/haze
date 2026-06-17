@@ -4,7 +4,7 @@ Status: **implemented (v2.0.0, "Haze")**. This documents the evolution of the
 extension from a fixed set of rating-site stylesheets into a general-purpose
 "blur anything on any site" tool, plus the tech-stack change that went with it.
 The build lives in `entrypoints/` + `lib/` (WXT + TS + Biome); the original
-per-site stylesheets are preserved under `legacy/`. Store copy: `STORE_LISTING.md`.
+per-site stylesheets remain in the git history (pre-2.0). Store copy: `STORE_LISTING.md`.
 
 ---
 

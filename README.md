@@ -51,6 +51,6 @@ selector stability ranking, and the community rule-list model.
 
 Adding/improving bundled site rules: edit `lib/community-rules.ts` and open a PR.
 
-The original per-site stylesheets are preserved under `legacy/`.
+The original per-site stylesheets live in the git history (pre-2.0 commits).
 
 > Forked from [ganigeorgiev/hide-ratings-extension](https://github.com/ganigeorgiev/hide-ratings-extension); generalized into Haze.
