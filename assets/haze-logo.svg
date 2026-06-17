@@ -1,0 +1,32 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Haze">
+  <title>Haze</title>
+  <!-- rounded-square backdrop -->
+  <rect x="0" y="0" width="512" height="512" rx="118" fill="#181715"/>
+
+  <defs>
+    <clipPath id="haze-circle">
+      <circle cx="256" cy="256" r="172"/>
+    </clipPath>
+  </defs>
+
+  <g clip-path="url(#haze-circle)">
+    <!-- left half: solid amber disc -->
+    <rect x="84" y="84" width="172" height="344" fill="#f0a23c"/>
+
+    <!-- right half: smoky haze wisps over the dark backdrop -->
+    <g stroke="#4c5c61" stroke-width="11" stroke-linecap="round" fill="none">
+      <path d="M296 150 C286 196 320 220 300 260 C282 300 316 330 298 380"/>
+      <path d="M331 140 C322 186 352 214 332 258 C314 300 346 332 330 382"/>
+      <path d="M364 166 C356 206 382 234 360 272 C344 304 372 330 358 372"/>
+      <path d="M281 212 C276 246 300 268 286 304 C276 332 296 352 286 380"/>
+      <path d="M394 202 C388 236 406 260 390 296 C380 322 396 344 388 368"/>
+    </g>
+    <g stroke="#3f5256" stroke-width="9" stroke-linecap="round" fill="none" opacity="0.8">
+      <path d="M313 176 C306 210 330 232 314 266 C300 296 324 320 312 356"/>
+      <path d="M348 196 C342 226 364 248 348 280 C336 306 356 326 346 354"/>
+    </g>
+  </g>
+
+  <!-- thin teal ring -->
+  <circle cx="256" cy="256" r="172" fill="none" stroke="#3f6d72" stroke-width="4"/>
+</svg>
