@@ -10,6 +10,8 @@ export interface HazeState {
   userRules: Record<string, Rule[]>;
   /** community rule id -> true when disabled by the user. */
   communityDisabled: Record<string, boolean>;
+  /** community rule id -> an edited version that replaces the bundled default. */
+  communityOverrides: Record<string, Rule>;
 }
 
 const DEFAULTS: HazeState = {
@@ -17,6 +19,7 @@ const DEFAULTS: HazeState = {
   siteDisabled: {},
   userRules: {},
   communityDisabled: {},
+  communityOverrides: {},
 };
 
 export async function loadState(): Promise<HazeState> {
@@ -46,6 +49,17 @@ export async function setCommunityDisabled(
   if (disabled) communityDisabled[id] = true;
   else delete communityDisabled[id];
   await browser.storage.sync.set({ communityDisabled });
+}
+
+/** Patch (or, with null, reset) a bundled community rule. */
+export async function setCommunityOverride(
+  id: string,
+  rule: Rule | null,
+): Promise<void> {
+  const { communityOverrides } = await loadState();
+  if (rule) communityOverrides[id] = rule;
+  else delete communityOverrides[id];
+  await browser.storage.sync.set({ communityOverrides });
 }
 
 export async function getUserRules(key: string): Promise<Rule[]> {

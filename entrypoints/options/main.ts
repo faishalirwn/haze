@@ -1,15 +1,23 @@
 import { browser } from "wxt/browser";
 import { COMMUNITY_SITES } from "../../lib/community-rules";
 import { communityRuleId } from "../../lib/rules";
+import { isValidSelector } from "../../lib/selector";
 import {
   type HazeState,
   loadState,
   setCommunityDisabled,
+  setCommunityOverride,
   setGlobalEnabled,
   setSiteDisabled,
   setUserRules,
 } from "../../lib/storage";
-import type { Effect, Reveal, Rule } from "../../lib/types";
+import {
+  DEFAULT_BG,
+  DEFAULT_INTENSITY,
+  type Effect,
+  type Reveal,
+  type Rule,
+} from "../../lib/types";
 
 const $ = <T extends HTMLElement>(id: string) =>
   document.getElementById(id) as T;
@@ -41,39 +49,123 @@ function renderUser(state: HazeState) {
 
   for (const key of keys) {
     const rules = state.userRules[key] ?? [];
-    const card = document.createElement("div");
-    card.className = "site";
-    const head = document.createElement("div");
-    head.className = "site-head";
-    head.innerHTML = `<span class="name">${key}</span>`;
-    card.appendChild(head);
-
+    const card = siteCard(key);
     for (const rule of rules) {
-      card.appendChild(userRuleRow(key, rules, rule));
+      const row = ruleRow(rule, () => setUserRules(key, rules));
+      const del = el<HTMLButtonElement>("button", "del");
+      del.type = "button";
+      del.textContent = "✕";
+      del.title = "Remove";
+      del.onclick = async () => {
+        await setUserRules(
+          key,
+          rules.filter((r) => r.id !== rule.id),
+        );
+        render();
+      };
+      row.append(
+        enableToggle(rule.enabled, row, (on) => {
+          rule.enabled = on;
+          setUserRules(key, rules);
+        }),
+      );
+      row.append(del);
+      card.appendChild(row);
     }
     root.appendChild(card);
   }
 }
 
-function userRuleRow(key: string, rules: Rule[], rule: Rule): HTMLElement {
+function renderCommunity(state: HazeState) {
+  const root = $("community");
+  root.innerHTML = "";
+
+  for (const site of COMMUNITY_SITES) {
+    const siteKey = site.hosts[0] as string;
+    const card = document.createElement("div");
+    card.className = "site";
+
+    const head = document.createElement("div");
+    head.className = "site-head";
+    const name = document.createElement("span");
+    name.className = "name";
+    name.textContent = site.id;
+    head.append(
+      name,
+      switchEl(!state.siteDisabled[siteKey], (on) =>
+        setSiteDisabled(siteKey, !on),
+      ),
+    );
+    card.appendChild(head);
+
+    site.rules.forEach((cr, index) => {
+      const id = communityRuleId(site.id, index);
+      const override = state.communityOverrides[id];
+      const draft: Rule = override
+        ? { ...override, id }
+        : {
+            id,
+            selector: cr.selector,
+            effect: cr.effect,
+            intensity: cr.intensity ?? DEFAULT_INTENSITY,
+            grayscale: cr.grayscale ?? false,
+            reveal: "hover",
+            bg: site.bg ?? DEFAULT_BG,
+            enabled: true,
+          };
+
+      const reset = el<HTMLButtonElement>("button", "reset");
+      reset.type = "button";
+      reset.textContent = "Reset";
+      reset.title = "Revert to the bundled default";
+      reset.onclick = async () => {
+        await setCommunityOverride(id, null);
+        render();
+      };
+
+      let row: HTMLElement;
+      // Show Reset as soon as the rule is first edited, no page refresh needed.
+      const ensureReset = () => {
+        if (!reset.isConnected) row.append(reset);
+      };
+      row = ruleRow(draft, () => {
+        setCommunityOverride(id, { ...draft, enabled: true });
+        ensureReset();
+      });
+      row.append(
+        enableToggle(!state.communityDisabled[id], row, (on) =>
+          setCommunityDisabled(id, !on),
+        ),
+      );
+      if (override) ensureReset();
+      card.appendChild(row);
+    });
+
+    root.appendChild(card);
+  }
+}
+
+/** A row of editable controls bound to `rule`; `onChange` persists after edits. */
+function ruleRow(rule: Rule, onChange: () => void): HTMLElement {
   const row = document.createElement("div");
   row.className = `rule${rule.enabled ? "" : " off"}`;
-
-  const save = async () => {
-    await setUserRules(key, rules);
-  };
 
   const sel = el<HTMLInputElement>("input", "sel");
   sel.value = rule.selector;
   sel.spellcheck = false;
+  const markValid = () =>
+    sel.classList.toggle("invalid", !isValidSelector(sel.value.trim()));
+  markValid();
+  sel.oninput = markValid;
   sel.onchange = () => {
     rule.selector = sel.value.trim();
-    save();
+    markValid();
+    onChange();
   };
 
   const effect = select(["blur", "scratchcard", "both"], rule.effect, (v) => {
     rule.effect = v as Effect;
-    save();
+    onChange();
   });
 
   const intensity = el<HTMLInputElement>("input", "num");
@@ -83,98 +175,49 @@ function userRuleRow(key: string, rules: Rule[], rule: Rule): HTMLElement {
   intensity.title = "Blur radius (px)";
   intensity.onchange = () => {
     rule.intensity = Number(intensity.value) || 0;
-    save();
+    onChange();
   };
 
   const reveal = select(["hover", "click"], rule.reveal, (v) => {
     rule.reveal = v as Reveal;
-    save();
+    onChange();
   });
 
-  const gray = el<HTMLLabelElement>("label", "cb");
-  const grayCb = document.createElement("input");
-  grayCb.type = "checkbox";
-  grayCb.checked = rule.grayscale;
-  grayCb.onchange = () => {
-    rule.grayscale = grayCb.checked;
-    save();
-  };
-  gray.append(grayCb, document.createTextNode("gray"));
-
-  const enable = el<HTMLLabelElement>("label", "cb");
-  const enableCb = document.createElement("input");
-  enableCb.type = "checkbox";
-  enableCb.checked = rule.enabled;
-  enableCb.onchange = async () => {
-    rule.enabled = enableCb.checked;
-    row.classList.toggle("off", !rule.enabled);
-    await save();
-  };
-  enable.append(enableCb, document.createTextNode("on"));
-
-  const del = el<HTMLButtonElement>("button", "del");
-  del.textContent = "✕";
-  del.title = "Remove";
-  del.onclick = async () => {
-    const next = rules.filter((r) => r.id !== rule.id);
-    await setUserRules(key, next);
-    render();
-  };
-
-  row.append(sel, effect, intensity, reveal, gray, enable, del);
+  row.append(
+    sel,
+    effect,
+    intensity,
+    reveal,
+    checkbox("gray", rule.grayscale, (on) => {
+      rule.grayscale = on;
+      onChange();
+    }),
+  );
   return row;
 }
 
-function renderCommunity(state: HazeState) {
-  const root = $("community");
-  root.innerHTML = "";
+function siteCard(title: string): HTMLElement {
+  const card = document.createElement("div");
+  card.className = "site";
+  const head = document.createElement("div");
+  head.className = "site-head";
+  const name = document.createElement("span");
+  name.className = "name";
+  name.textContent = title;
+  head.appendChild(name);
+  card.appendChild(head);
+  return card;
+}
 
-  for (const site of COMMUNITY_SITES) {
-    const siteDisableKey = site.hosts[0] as string;
-    const card = document.createElement("div");
-    card.className = "site";
-
-    const head = document.createElement("div");
-    head.className = "site-head";
-    const name = document.createElement("span");
-    name.className = "name";
-    name.textContent = site.id;
-    const toggle = switchEl(!state.siteDisabled[siteDisableKey], (on) =>
-      setSiteDisabled(siteDisableKey, !on),
-    );
-    head.append(name, toggle);
-    card.appendChild(head);
-
-    site.rules.forEach((cr, index) => {
-      const id = communityRuleId(site.id, index);
-      const row = document.createElement("div");
-      const enabled = !state.communityDisabled[id];
-      row.className = `rule${enabled ? "" : " off"}`;
-
-      const sel = el<HTMLInputElement>("input", "sel");
-      sel.value = cr.selector;
-      sel.readOnly = true;
-
-      const tag = document.createElement("span");
-      tag.className = "tag";
-      tag.textContent = cr.effect;
-
-      const enable = el<HTMLLabelElement>("label", "cb");
-      const cb = document.createElement("input");
-      cb.type = "checkbox";
-      cb.checked = enabled;
-      cb.onchange = () => {
-        row.classList.toggle("off", !cb.checked);
-        setCommunityDisabled(id, !cb.checked);
-      };
-      enable.append(cb, document.createTextNode("on"));
-
-      row.append(sel, tag, enable);
-      card.appendChild(row);
-    });
-
-    root.appendChild(card);
-  }
+function enableToggle(
+  on: boolean,
+  row: HTMLElement,
+  onChange: (on: boolean) => void,
+): HTMLElement {
+  return checkbox("on", on, (value) => {
+    row.classList.toggle("off", !value);
+    onChange(value);
+  });
 }
 
 // --- export / import ---
@@ -186,6 +229,7 @@ async function exportRules() {
     version: 1,
     userRules: state.userRules,
     communityDisabled: state.communityDisabled,
+    communityOverrides: state.communityOverrides,
     siteDisabled: state.siteDisabled,
     globalEnabled: state.globalEnabled,
   };
@@ -216,6 +260,7 @@ async function importRules(file: File) {
   await browser.storage.sync.set({
     userRules: data.userRules ?? {},
     communityDisabled: data.communityDisabled ?? {},
+    communityOverrides: data.communityOverrides ?? {},
     siteDisabled: data.siteDisabled ?? {},
     ...(typeof data.globalEnabled === "boolean"
       ? { globalEnabled: data.globalEnabled }
@@ -247,6 +292,20 @@ function select(
   }
   s.onchange = () => onChange(s.value);
   return s;
+}
+
+function checkbox(
+  label: string,
+  checked: boolean,
+  onChange: (on: boolean) => void,
+): HTMLLabelElement {
+  const wrap = el<HTMLLabelElement>("label", "cb");
+  const input = document.createElement("input");
+  input.type = "checkbox";
+  input.checked = checked;
+  input.onchange = () => onChange(input.checked);
+  wrap.append(input, document.createTextNode(label));
+  return wrap;
 }
 
 function switchEl(checked: boolean, onChange: (on: boolean) => void) {

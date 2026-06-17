@@ -14,25 +14,38 @@ export function communitySitesFor(hostname: string): CommunitySite[] {
   );
 }
 
-/** Materialize bundled community rules for a host into full Rule objects. */
-function communityRulesFor(hostname: string, state: HazeState): Rule[] {
+/**
+ * Materialize bundled community rules for a host into full Rule objects,
+ * including disabled ones (enabled reflects communityDisabled). For display.
+ */
+export function communityRulesFor(hostname: string, state: HazeState): Rule[] {
   const out: Rule[] = [];
   for (const site of communitySitesFor(hostname)) {
     site.rules.forEach((cr, index) => {
       const id = communityRuleId(site.id, index);
-      out.push({
-        id,
-        selector: cr.selector,
-        effect: cr.effect,
-        intensity: cr.intensity ?? DEFAULT_INTENSITY,
-        grayscale: cr.grayscale ?? false,
-        reveal: "hover",
-        bg: site.bg ?? DEFAULT_BG,
-        enabled: !state.communityDisabled[id],
-      });
+      const override = state.communityOverrides[id];
+      const base: Rule = override
+        ? { ...override, id }
+        : {
+            id,
+            selector: cr.selector,
+            effect: cr.effect,
+            intensity: cr.intensity ?? DEFAULT_INTENSITY,
+            grayscale: cr.grayscale ?? false,
+            reveal: "hover",
+            bg: site.bg ?? DEFAULT_BG,
+            enabled: true,
+          };
+      // enable state is tracked separately from the edit, so they never desync
+      out.push({ ...base, enabled: !state.communityDisabled[id] });
     });
   }
   return out;
+}
+
+/** Whether a bundled community rule has been edited from its default. */
+export function isCommunityOverridden(id: string, state: HazeState): boolean {
+  return id in state.communityOverrides;
 }
 
 export interface EffectiveRules {

@@ -90,7 +90,7 @@ async function registerForPattern(
       },
     ]);
   } catch {
-    /* permission revoked or already registered — ignore */
+    /* permission revoked or already registered - ignore */
   }
 }
 
@@ -110,7 +110,7 @@ async function handleCreateRule(
     selector: msg.selector,
     effect: msg.effect,
     intensity: msg.intensity,
-    grayscale: false,
+    grayscale: msg.grayscale,
     reveal: msg.reveal,
     bg: DEFAULT_BG,
     enabled: true,

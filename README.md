@@ -3,22 +3,22 @@
 [![Chrome](https://img.shields.io/chrome-web-store/users/djfdaikneamfdgjpdhclphkanmccndep.svg?style=flat-square&label=Chrome&logo=google%20chrome&logoColor=white)](https://chrome.google.com/webstore/detail/djfdaikneamfdgjpdhclphkanmccndep)
 
 **Blur, hide, or scratchcard anything on any website.** Point at an element,
-pick it, and Haze conceals it until you hover (or click) to reveal — then toggle
+pick it, and Haze conceals it until you hover (or click) to reveal - then toggle
 everything back on in one click.
 
 Haze ships with bundled rules for popular rating sites (it's the successor to
 *Hide Ratings*), but the engine is general: spoilers, prices, social counts,
-sensitive data while screen-sharing — anything you don't want to see until you
+sensitive data while screen-sharing - anything you don't want to see until you
 choose to.
 
 ## Features
 
-- **Element picker** — point, adjust granularity (↑/↓ the DOM tree), create a rule.
-- **Three effects** — blur, scratchcard overlay, or both; adjustable intensity.
-- **Reveal on demand** — hover or click to peek; the global switch hides/shows all.
-- **Per-site & per-rule toggles** — fine-grained control in the options page.
-- **Bundled rating rules** — IMDb, Letterboxd, Trakt, MyAnimeList, AniList,
-  Goodreads, Hardcover, Google Search — contributable via PR.
+- **Element picker** - point, adjust granularity (↑/↓ the DOM tree), create a rule.
+- **Three effects** - blur, scratchcard overlay, or both; adjustable intensity.
+- **Reveal on demand** - hover or click to peek; the global switch hides/shows all.
+- **Per-site & per-rule toggles** - fine-grained control in the options page.
+- **Bundled rating rules** - IMDb, Letterboxd, Trakt, MyAnimeList, AniList,
+  Goodreads, Hardcover, Google Search - contributable via PR.
 - **Export / import** your rules as JSON.
 
 ## Permissions
@@ -45,7 +45,7 @@ pnpm lint         # biome
 
 ## Architecture
 
-See [docs/DESIGN.md](docs/DESIGN.md) for the full design — the containment engine
+See [docs/DESIGN.md](docs/DESIGN.md) for the full design - the containment engine
 (outermost-wins dedupe), the hybrid CSS-inject + MutationObserver approach, the
 selector stability ranking, and the community rule-list model.
 

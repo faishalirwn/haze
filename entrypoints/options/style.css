@@ -1,11 +1,12 @@
 :root {
-  --bg: #101016;
-  --panel: #1a1a22;
-  --panel2: #20202a;
-  --line: #2c2c38;
-  --text: #ececf1;
-  --muted: #9a9aa8;
-  --accent: #20c4d4;
+  --bg: #0f0f0e;
+  --panel: #181816;
+  --panel2: #211f1d;
+  --line: #2c2b28;
+  --text: #eceae6;
+  --muted: #918d85;
+  --accent: #f0a23c;
+  --accent-ink: #221703;
   --danger: #e0556b;
 }
 * {
@@ -64,6 +65,9 @@ h2 {
   flex-wrap: wrap;
 }
 .toolbar button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   background: var(--panel2);
   color: var(--text);
   border: 1px solid var(--line);
@@ -73,8 +77,12 @@ h2 {
   font-weight: 600;
   font-size: 12px;
 }
+.toolbar button svg {
+  width: 14px;
+  height: 14px;
+}
 .toolbar button:hover {
-  border-color: var(--accent);
+  border-color: var(--muted);
 }
 
 .site {
@@ -93,7 +101,7 @@ h2 {
 .site-head .name {
   font-weight: 700;
   font-family: ui-monospace, monospace;
-  color: var(--accent);
+  color: var(--text);
 }
 .rule {
   display: flex;
@@ -109,7 +117,7 @@ h2 {
   font-family: ui-monospace, monospace;
   font-size: 12px;
   background: var(--panel2);
-  color: #cfd2da;
+  color: #cabfae;
   border: 1px solid var(--line);
   border-radius: 6px;
   padding: 6px 8px;
@@ -134,7 +142,39 @@ h2 {
   color: var(--muted);
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 5px;
+  cursor: pointer;
+}
+.cb input[type="checkbox"] {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 15px;
+  height: 15px;
+  margin: 0;
+  flex: none;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: var(--bg);
+  cursor: pointer;
+  position: relative;
+}
+.cb input[type="checkbox"]:hover {
+  border-color: var(--muted);
+}
+.cb input[type="checkbox"]:checked {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+.cb input[type="checkbox"]:checked::after {
+  content: "";
+  position: absolute;
+  left: 4px;
+  top: 1px;
+  width: 3px;
+  height: 7px;
+  border: solid var(--accent-ink);
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
 }
 .rule .del {
   border: 0;
@@ -144,6 +184,32 @@ h2 {
   font-size: 14px;
 }
 .rule .del:hover {
+  color: var(--danger);
+}
+.rule .tag {
+  font-size: 10px;
+  color: var(--muted);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  padding: 1px 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.rule .reset {
+  font-size: 11px;
+  color: var(--muted);
+  background: transparent;
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  padding: 3px 8px;
+  cursor: pointer;
+}
+.rule .reset:hover {
+  color: var(--text);
+  border-color: var(--muted);
+}
+.rule .sel.invalid {
+  border-color: var(--danger);
   color: var(--danger);
 }
 .rule.off {

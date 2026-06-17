@@ -13,7 +13,7 @@ per-site stylesheets are preserved under `legacy/`. Store copy: `STORE_LISTING.m
 Today the extension blurs hardcoded rating selectors on 8 known sites via
 per-site CSS. The goal is to generalize this so a user can **pick any element on
 any site**, blur and/or scratchcard it, toggle it on/off, and have the effect
-reveal on interaction — exactly the UX we have now, but user-defined and
+reveal on interaction - exactly the UX we have now, but user-defined and
 universal.
 
 The existing 8 sites don't go away: they become the **seed entries of a shared
@@ -33,10 +33,10 @@ All "must haves" agreed in brainstorm:
   - **Editable selector field** so users can hand-fix brittle auto-selectors.
   - Commit only on an explicit "create" action, never the first click.
 - **Per-rule effect**: `blur` / `scratchcard` / `both`, plus a **blur-intensity**
-  value. (We already special-case `blur(24px)` for IMDb star icons — that becomes
+  value. (We already special-case `blur(24px)` for IMDb star icons - that becomes
   a per-rule knob.)
 - **Reveal mode per rule**: `hover` (current default), `click-to-toggle`, or a
-  `scratch` drag gesture (stretch — the scratchcard metaphor begs for it).
+  `scratch` drag gesture (stretch - the scratchcard metaphor begs for it).
 - **Toggle hierarchy**: global master switch (today's `show-ratings` class),
   per-site, and per-rule.
 
@@ -106,7 +106,7 @@ nested cases instead of tagging every element.
 
 ### 4.3 Storage schema (draft)
 ```jsonc
-// user rules (storage.sync — small) + per-rule overrides of community rules
+// user rules (storage.sync - small) + per-rule overrides of community rules
 {
   "imdb.com": [
     { "selector": "[data-testid=\"hero-rating-bar__aggregate-rating\"]",
@@ -152,7 +152,7 @@ Follows the **EasyList / uBlock filter-list model** (proven pattern):
   injection). See open questions.
 - **Performance**: `querySelectorAll` per rule per mutation will melt heavy pages.
   Debounce the observer, scope queries, bail when the global toggle is off.
-- **FOUC**: addressed by the hybrid (§4.1) — CSS must inject at `document_start`.
+- **FOUC**: addressed by the hybrid (§4.1) - CSS must inject at `document_start`.
 
 ---
 
@@ -161,16 +161,16 @@ Follows the **EasyList / uBlock filter-list model** (proven pattern):
 Adopt the new stack **as part of the rewrite into the generic engine**, not as a
 separate migration of the current trivial code.
 
-- **WXT** — biggest payoff:
+- **WXT** - biggest payoff:
   - Generates the manifest from config (kills the giant hand-maintained Google
     domain list; eases the move to broad/optional host permissions).
-  - **HMR for content scripts** — huge for iterating on the picker.
+  - **HMR for content scripts** - huge for iterating on the picker.
   - Free Chrome + Firefox builds (we already do `var browser = browser || chrome`).
-- **TypeScript** — worth it once there's a real data model: the storage schema,
+- **TypeScript** - worth it once there's a real data model: the storage schema,
   picker ↔ content-script ↔ options messaging, and selector-generation logic.
-- **Biome** — cheap lint/format; add it last, it's a nicety not an architectural
+- **Biome** - cheap lint/format; add it last, it's a nicety not an architectural
   driver.
-- **Testing** — Playwright E2E against fixture pages for selector + containment
+- **Testing** - Playwright E2E against fixture pages for selector + containment
   regression (WXT supports this).
 
 **Cost to acknowledge**: contributors now need Node + a build, where today they
@@ -181,25 +181,25 @@ need nothing. Justified by the engine; would be over-engineering without it.
 ## 8. Decisions & open questions
 
 **Decided:**
-1. **Positioning** — ✅ **New product identity.** "Hide Ratings" + its store
+1. **Positioning** - ✅ **New product identity.** "Hide Ratings" + its store
    listing undersell the generalized scope (spoilers, screen-share privacy, NSFW,
    counts). Ratings becomes community list #1, not the identity.
-2. **Store listing** — ✅ **Reuse the existing Chrome listing in place** (rebrand
+2. **Store listing** - ✅ **Reuse the existing Chrome listing in place** (rebrand
    the contents). Moot anyway: solo user today, no install base / reviews to
    preserve, so no reason to spin up a second listing. Keep "ratings" as a keyword
    in the new title/description for SEO continuity. Optional host perms (decision
    #3 below) means the rebrand update won't trigger a forced permission prompt.
-3. **Name** — ✅ **Haze** (Deadlock hero; the word literally means visual blur).
+3. **Name** - ✅ **Haze** (Deadlock hero; the word literally means visual blur).
    Chosen over Sombra/Veil because it self-describes the product, carries low
    trademark risk (generic dictionary word, not a coined character mark), and has
    weaker store-namespace incumbents. Contested but acceptable ("second place is
    ok"). See §11 for the namespace check that ruled out the alternatives.
-4. **Build workflow** — ✅ When implementation starts, **build straight through to
+4. **Build workflow** - ✅ When implementation starts, **build straight through to
    a finished product**; no mid-way check-ins. User tests once at the end.
-2. **Backward compatibility** — ✅ **Migrate seamlessly**. On upgrade, seed
+2. **Backward compatibility** - ✅ **Migrate seamlessly**. On upgrade, seed
    settings from the community list so the 8 built-in sites keep working with no
    visible change.
-3. **Permission model** — ✅ **Optional host permissions**, requested per-site at
+3. **Permission model** - ✅ **Optional host permissions**, requested per-site at
    first pick, via dynamic `scripting.registerContentScripts`. No broad
    `<all_urls>` prompt; friendlier install + easier store review.
 
@@ -216,21 +216,21 @@ need nothing. Justified by the engine; would be over-engineering without it.
 The same engine (pick → blur/scratchcard → toggle → reveal) generalizes to any
 "I don't want to see this until I choose to" scenario. Strongest candidates:
 
-- **Spoilers** — sports scores/results, episode counts, plot points, forum/Reddit
+- **Spoilers** - sports scores/results, episode counts, plot points, forum/Reddit
   spoiler text, "who got eliminated." This is the biggest adjacent category and a
   natural fit for reveal-on-demand. Could be its own flagship community list.
-- **Screen-sharing / recording privacy** — blur API keys, `.env` values, tokens,
+- **Screen-sharing / recording privacy** - blur API keys, `.env` values, tokens,
   salaries, account balances, customer data while demoing or streaming. The
   toggle is the killer feature here: one click to hide everything sensitive.
-- **NSFW / sensitive imagery** — `filter: blur()` works on `<img>` too; scratch
-  to reveal. (User's suggestion — valid, same machinery.)
-- **Anxiety / dopamine hygiene** — hide social like/follower/view counts,
+- **NSFW / sensitive imagery** - `filter: blur()` works on `<img>` too; scratch
+  to reveal. (User's suggestion - valid, same machinery.)
+- **Anxiety / dopamine hygiene** - hide social like/follower/view counts,
   notification badges, unread counts (existing single-purpose extensions prove
   demand); reveal only when you actually want the number.
-- **Anchoring avoidance** — hide prices while comparison shopping, or portfolio /
+- **Anchoring avoidance** - hide prices while comparison shopping, or portfolio /
   stock balances, to reduce impulse and emotional reaction.
 
-These don't need engine changes — just additional community lists. Suggests the
+These don't need engine changes - just additional community lists. Suggests the
 community-list system (§5) is the real platform; ratings is just list #1.
 
 ---
@@ -239,7 +239,7 @@ community-list system (§5) is the real platform; ratings is just list #1.
 
 1. **Prototype the engine only**: hybrid CSS inject + MutationObserver +
    outermost-wins suppression, **site-agnostic on all websites** (the engine is
-   generic by design — no hardcoded hosts). Stress-test across the hard cases: a
+   generic by design - no hardcoded hosts). Stress-test across the hard cases: a
    heavy SPA (IMDb), a static page, and an infinite-scroll feed. Prove no-FOUC, no
    stacking, working reveal *before* committing to the full stack.
 2. Scaffold WXT + TS around the proven engine.
@@ -251,16 +251,16 @@ community-list system (§5) is the real platform; ratings is just list #1.
 
 ## 11. Name candidates (codename from anime / game / movie)
 
-Theme to match: **conceal until revealed** — illusion, mist, cloak, stealth.
+Theme to match: **conceal until revealed** - illusion, mist, cloak, stealth.
 
 | Name | Source | Why it fits | Notes |
 |---|---|---|---|
 | **Mirage** | Apex Legends / FF | An illusion that isn't real and dissolves on a closer look | Very brandable; common word, check namespace |
 | **Sombra** | Overwatch | Stealth + the "hack to reveal" mirrors hover-to-reveal exactly; "sombra" = shadow | Cool, brandable; common Spanish word |
-| **Genjutsu** | Naruto | Illusion technique — what you see isn't really there | Distinctive codename; spelling is niche for a public name |
+| **Genjutsu** | Naruto | Illusion technique - what you see isn't really there | Distinctive codename; spelling is niche for a public name |
 | **Kyoka** | Bleach (Kyōka Suigetsu, Aizen) | A blade that controls all perception / shows false things | Short, brandable, obscure-cool |
 | **Obscura** | Camera obscura / HP "Obscurus" | Literally "to obscure"; ties to vision | Elegant; doubles as a real public name |
-| **Predator/Cloak** | Predator | The cloak IS a shimmering blur — closest to the literal visual | "Cloak" plain; "Predator" trademarked |
+| **Predator/Cloak** | Predator | The cloak IS a shimmering blur - closest to the literal visual | "Cloak" plain; "Predator" trademarked |
 
 Leaning: **Sombra** or **Kyoka** as a cool codename; **Mirage** or **Obscura** if
 it should double as the public store name. Availability check (Chrome Web Store +

@@ -7,6 +7,7 @@ export interface CreateRuleMessage {
   effect: Effect;
   reveal: Reveal;
   intensity: number;
+  grayscale: boolean;
 }
 
 export type HazeMessage = CreateRuleMessage;

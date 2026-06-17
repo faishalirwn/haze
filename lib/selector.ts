@@ -52,6 +52,17 @@ export function matchCount(selector: string): number {
   }
 }
 
+/** Is this a syntactically valid CSS selector? (Not whether it matches anything.) */
+export function isValidSelector(selector: string): boolean {
+  if (!selector.trim()) return false;
+  try {
+    document.createDocumentFragment().querySelector(selector);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 function isUnique(selector: string): boolean {
   return matchCount(selector) === 1;
 }
@@ -119,6 +130,21 @@ export function generateSelector(el: Element): string {
   }
 
   return parts.join(" > ");
+}
+
+/**
+ * A broad, NON-unique selector that matches every element like this one - its
+ * stable classes (e.g. `.media-card-rating`), so one pick can blur a whole grid.
+ * Falls back to a shared attribute, then the bare tag.
+ */
+export function generalizedSelector(el: Element): string {
+  const classes = stableClasses(el);
+  if (classes.length) return classes.map((c) => `.${CSS.escape(c)}`).join("");
+  for (const attr of TEST_ATTRS) {
+    const val = el.getAttribute(attr);
+    if (val) return `${el.tagName.toLowerCase()}[${attr}="${CSS.escape(val)}"]`;
+  }
+  return el.tagName.toLowerCase();
 }
 
 /** Selectors for the element and each of its ancestors (for the granularity walk). */

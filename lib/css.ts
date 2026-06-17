@@ -3,6 +3,8 @@ import type { Rule } from "./types";
 export const ACTIVE_CLASS = "haze-active";
 export const SUPPRESSED_CLASS = "haze-suppressed";
 export const REVEALED_CLASS = "haze-revealed";
+/** Separate gate used by the picker's live preview. */
+export const PREVIEW_CLASS = "haze-preview";
 
 /** Split a comma-separated selector group into individual selectors. */
 export function splitSelector(selector: string): string[] {
@@ -26,10 +28,15 @@ function revealedFilter(rule: Rule): string {
 }
 
 /**
- * Generate the stylesheet for a set of rules. Everything is gated behind
- * `html.haze-active` so the global/site toggle is a single class flip.
+ * Generate the stylesheet for a set of rules, gated behind `html.<gate>` so the
+ * global/site toggle is a single class flip. The picker passes PREVIEW_CLASS to
+ * render a live preview without touching the real engine state.
  */
-export function generateCss(rules: Rule[], defaultBg: string): string {
+export function generateCss(
+  rules: Rule[],
+  defaultBg: string,
+  gate: string = ACTIVE_CLASS,
+): string {
   const out: string[] = [];
 
   for (const rule of rules) {
@@ -38,7 +45,7 @@ export function generateCss(rules: Rule[], defaultBg: string): string {
     const wantsCard = rule.effect === "scratchcard" || rule.effect === "both";
 
     for (const part of splitSelector(rule.selector)) {
-      const base = `html.${ACTIVE_CLASS} ${part}`;
+      const base = `html.${gate} ${part}`;
 
       if (wantsBlur) {
         out.push(`${base}{filter:${blurFilter(rule)};transition:filter .2s}`);
@@ -75,10 +82,8 @@ export function generateCss(rules: Rule[], defaultBg: string): string {
 
   // Containment dedupe: an inner matched element nested in another matched
   // element is suppressed (outermost-wins). See docs/DESIGN.md §3b.
-  out.push(`html.${ACTIVE_CLASS} .${SUPPRESSED_CLASS}{filter:none !important}`);
-  out.push(
-    `html.${ACTIVE_CLASS} .${SUPPRESSED_CLASS}::after{display:none !important}`,
-  );
+  out.push(`html.${gate} .${SUPPRESSED_CLASS}{filter:none !important}`);
+  out.push(`html.${gate} .${SUPPRESSED_CLASS}::after{display:none !important}`);
 
   return out.join("\n");
 }

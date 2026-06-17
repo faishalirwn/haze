@@ -1,10 +1,12 @@
 :root {
-  --bg: #14141a;
-  --panel: #1d1d26;
-  --line: #2c2c38;
-  --text: #ececf1;
-  --muted: #9a9aa8;
-  --accent: #20c4d4;
+  --bg: #121211;
+  --panel: #1a1a18;
+  --panel2: #222220;
+  --line: #2e2d2a;
+  --text: #eceae6;
+  --muted: #918d85;
+  --accent: #f0a23c;
+  --accent-ink: #221703;
   --danger: #e0556b;
 }
 
@@ -57,7 +59,7 @@ main {
   font-weight: 600;
   font-family: ui-monospace, monospace;
   font-size: 12px;
-  color: var(--accent);
+  color: var(--text);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -66,14 +68,25 @@ main {
 
 .pick {
   width: 100%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
   border: 0;
   border-radius: 8px;
   padding: 10px;
   background: var(--accent);
-  color: #06262a;
+  color: var(--accent-ink);
   font-weight: 700;
   font-size: 13px;
   cursor: pointer;
+}
+.pick svg {
+  width: 15px;
+  height: 15px;
+}
+.pick:hover {
+  background: #f4ad53;
 }
 .pick:disabled {
   background: var(--line);
@@ -95,11 +108,15 @@ main {
   text-transform: uppercase;
   letter-spacing: 0.05em;
   color: var(--muted);
-  margin: 0 0 8px;
+  margin: 16px 0 8px;
   font-weight: 600;
+}
+.rules > h2:first-child {
+  margin-top: 0;
 }
 .rules h2 span {
   color: var(--accent);
+  font-weight: 700;
 }
 
 ul {
@@ -126,7 +143,7 @@ li .sel {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  color: #cfd2da;
+  color: #cabfae;
 }
 li.off .sel {
   opacity: 0.45;
@@ -164,7 +181,7 @@ footer {
   border-top: 1px solid var(--line);
 }
 footer .aslink {
-  color: var(--accent);
+  color: var(--muted);
   background: none;
   border: 0;
   padding: 0;
@@ -173,6 +190,7 @@ footer .aslink {
   font-family: inherit;
 }
 footer .aslink:hover {
+  color: var(--text);
   text-decoration: underline;
 }
 

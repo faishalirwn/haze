@@ -1,8 +1,9 @@
 import { browser } from "wxt/browser";
 import { hostKey, isInjectableUrl, originPattern } from "../../lib/host";
-import { communitySitesFor } from "../../lib/rules";
+import { communityRulesFor, communitySitesFor } from "../../lib/rules";
 import {
   loadState,
+  setCommunityDisabled,
   setGlobalEnabled,
   setSiteDisabled,
   setUserRules,
@@ -13,10 +14,7 @@ const $ = <T extends HTMLElement>(id: string) =>
   document.getElementById(id) as T;
 
 async function activeTab() {
-  const [tab] = await browser.tabs.query({
-    active: true,
-    currentWindow: true,
-  });
+  const [tab] = await browser.tabs.query({ active: true, currentWindow: true });
   return tab;
 }
 
@@ -43,7 +41,6 @@ async function init() {
     siteInput.disabled = true;
     pickBtn.disabled = true;
     note.textContent = "Haze can only run on normal web pages.";
-    renderRules("", []);
     return;
   }
 
@@ -61,7 +58,7 @@ async function init() {
     pick(tab.id as number, url, isCommunity),
   );
 
-  renderRules(key, state.userRules[key] ?? []);
+  await renderRules(hostname, key);
 }
 
 async function pick(tabId: number, url: string, isCommunity: boolean) {
@@ -80,55 +77,107 @@ async function pick(tabId: number, url: string, isCommunity: boolean) {
   window.close();
 }
 
-function renderRules(key: string, rules: Rule[]) {
-  $("count").textContent = rules.length ? `(${rules.length})` : "";
-  const list = $<HTMLUListElement>("list");
-  list.innerHTML = "";
+async function renderRules(hostname: string, key: string) {
+  const state = await loadState();
+  const builtIn = communityRulesFor(hostname, state);
+  const user = state.userRules[key] ?? [];
+  const root = $("rules");
+  root.innerHTML = "";
 
-  if (!rules.length) {
-    const li = document.createElement("li");
-    li.className = "empty-wrap";
-    li.innerHTML =
-      '<span class="empty">No custom rules on this site yet.</span>';
-    list.appendChild(li);
+  if (!builtIn.length && !user.length) {
+    root.innerHTML =
+      '<p class="empty">No rules on this site yet. Hit “Pick element” above.</p>';
     return;
   }
 
-  for (const rule of rules) {
-    const li = document.createElement("li");
-    if (!rule.enabled) li.classList.add("off");
+  if (builtIn.length) {
+    root.appendChild(heading("Built-in", builtIn.length));
+    const ul = document.createElement("ul");
+    for (const rule of builtIn) {
+      ul.appendChild(
+        ruleRow(rule, {
+          onToggle: async () => {
+            await setCommunityDisabled(rule.id, rule.enabled);
+            await renderRules(hostname, key);
+          },
+        }),
+      );
+    }
+    root.appendChild(ul);
+  }
 
-    const sel = document.createElement("span");
-    sel.className = "sel";
-    sel.textContent = rule.selector;
-    sel.title = rule.selector;
+  root.appendChild(heading("Your rules", user.length));
+  if (!user.length) {
+    const p = document.createElement("p");
+    p.className = "empty";
+    p.textContent = "None yet.";
+    root.appendChild(p);
+  } else {
+    const ul = document.createElement("ul");
+    for (const rule of user) {
+      ul.appendChild(
+        ruleRow(rule, {
+          onToggle: async () => {
+            rule.enabled = !rule.enabled;
+            await setUserRules(key, user);
+            await renderRules(hostname, key);
+          },
+          onDelete: async () => {
+            await setUserRules(
+              key,
+              user.filter((r) => r.id !== rule.id),
+            );
+            await renderRules(hostname, key);
+          },
+        }),
+      );
+    }
+    root.appendChild(ul);
+  }
+}
 
-    const tag = document.createElement("span");
-    tag.className = "tag";
-    tag.textContent = rule.effect;
+function heading(title: string, count: number): HTMLElement {
+  const h = document.createElement("h2");
+  h.textContent = title;
+  const span = document.createElement("span");
+  span.textContent = count ? ` ${count}` : "";
+  h.appendChild(span);
+  return h;
+}
 
-    const toggle = document.createElement("button");
-    toggle.textContent = rule.enabled ? "◉" : "○";
-    toggle.title = rule.enabled ? "Disable" : "Enable";
-    toggle.addEventListener("click", async () => {
-      rule.enabled = !rule.enabled;
-      await setUserRules(key, rules);
-      renderRules(key, rules);
-    });
+function ruleRow(
+  rule: Rule,
+  handlers: { onToggle: () => void; onDelete?: () => void },
+): HTMLLIElement {
+  const li = document.createElement("li");
+  if (!rule.enabled) li.classList.add("off");
 
+  const sel = document.createElement("span");
+  sel.className = "sel";
+  sel.textContent = rule.selector;
+  sel.title = rule.selector;
+
+  const tag = document.createElement("span");
+  tag.className = "tag";
+  tag.textContent = rule.effect;
+
+  const toggle = document.createElement("button");
+  toggle.textContent = rule.enabled ? "◉" : "○";
+  toggle.title = rule.enabled ? "Disable" : "Enable";
+  toggle.addEventListener("click", handlers.onToggle);
+
+  li.append(sel, tag, toggle);
+
+  if (handlers.onDelete) {
     const del = document.createElement("button");
     del.className = "del";
     del.textContent = "✕";
     del.title = "Remove";
-    del.addEventListener("click", async () => {
-      const next = rules.filter((r) => r.id !== rule.id);
-      await setUserRules(key, next);
-      renderRules(key, next);
-    });
-
-    li.append(sel, tag, toggle, del);
-    list.appendChild(li);
+    del.addEventListener("click", handlers.onDelete);
+    li.append(del);
   }
+
+  return li;
 }
 
 init();

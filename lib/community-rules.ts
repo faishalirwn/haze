@@ -1,4 +1,4 @@
-// Bundled community rules — the seed list, ported from the original per-site
+// Bundled community rules - the seed list, ported from the original per-site
 // stylesheets. Contributors add/improve these via PR (see docs/DESIGN.md §5).
 // Some sites' originally hand-tuned partial overlays are approximated here as
 // whole-element blur/scratchcard; refine via PR as needed.

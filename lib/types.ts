@@ -11,7 +11,7 @@ export interface Rule {
   effect: Effect;
   /** Blur radius in px. */
   intensity: number;
-  /** Also desaturate — useful for color-coded indicators. */
+  /** Also desaturate - useful for color-coded indicators. */
   grayscale: boolean;
   reveal: Reveal;
   /** Scratchcard overlay color; falls back to the site/global default. */
