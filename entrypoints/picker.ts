@@ -129,8 +129,8 @@ function startPicker(onClose: () => void): void {
       </div>
       <div class="row controls">
         <select id="scope" title="How many elements to match">
-          <option value="one">This one</option>
           <option value="similar">All similar</option>
+          <option value="one">This one</option>
         </select>
         <select id="effect" title="Effect">
           <option value="blur">Blur</option>
