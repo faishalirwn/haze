@@ -12,6 +12,8 @@ export interface CommunityRule {
   /** Blur radius px; defaults to 8. */
   intensity?: number;
   grayscale?: boolean;
+  /** Regex source to redact only matching text inside the match. See lib/text.ts. */
+  text?: string;
 }
 
 export interface CommunitySite {

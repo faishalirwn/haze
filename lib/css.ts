@@ -3,6 +3,8 @@ import type { Rule } from "./types";
 export const ACTIVE_CLASS = "haze-active";
 export const SUPPRESSED_CLASS = "haze-suppressed";
 export const REVEALED_CLASS = "haze-revealed";
+/** Wrapper applied to text-redaction matches (see lib/text.ts). */
+export const TEXT_CLASS = "haze-text";
 /** Separate gate used by the picker's live preview. */
 export const PREVIEW_CLASS = "haze-preview";
 
@@ -36,6 +38,7 @@ export function generateCss(
   rules: Rule[],
   defaultBg: string,
   gate: string = ACTIVE_CLASS,
+  textClass: string = TEXT_CLASS,
 ): string {
   const out: string[] = [];
 
@@ -46,33 +49,36 @@ export function generateCss(
 
     for (const part of splitSelector(rule.selector)) {
       const base = `html.${gate} ${part}`;
+      // Text rules act on the wrapped substrings inside the match; element
+      // rules act on the match itself. Reveal is still driven by the matched
+      // element so click/hover behaves the same in both modes.
+      const target = rule.text ? `${base} .${textClass}` : base;
+      const revealed = rule.text
+        ? `${base}.${REVEALED_CLASS} .${textClass}`
+        : `${base}.${REVEALED_CLASS}`;
 
       if (wantsBlur) {
-        out.push(`${base}{filter:${blurFilter(rule)};transition:filter .2s}`);
+        out.push(`${target}{filter:${blurFilter(rule)};transition:filter .2s}`);
         if (rule.reveal === "hover") {
           out.push(
-            `${base}:hover{filter:${revealedFilter(rule)} !important;transition-delay:.3s !important}`,
+            `${target}:hover{filter:${revealedFilter(rule)} !important;transition-delay:.3s !important}`,
           );
         } else {
-          out.push(
-            `${base}.${REVEALED_CLASS}{filter:${revealedFilter(rule)} !important}`,
-          );
+          out.push(`${revealed}{filter:${revealedFilter(rule)} !important}`);
         }
       }
 
       if (wantsCard) {
-        out.push(`${base}{position:relative}`);
+        out.push(`${target}{position:relative}`);
         out.push(
-          `${base}::after{content:'';position:absolute;inset:0;background:${bg};border-radius:4px;pointer-events:none;opacity:1;transition:opacity 0s}`,
+          `${target}::after{content:'';position:absolute;inset:0;background:${bg};border-radius:4px;pointer-events:none;opacity:1;transition:opacity 0s}`,
         );
         if (rule.reveal === "hover") {
           out.push(
-            `${base}:hover::after{opacity:0;transition:opacity .2s;transition-delay:.3s}`,
+            `${target}:hover::after{opacity:0;transition:opacity .2s;transition-delay:.3s}`,
           );
         } else {
-          out.push(
-            `${base}.${REVEALED_CLASS}::after{opacity:0;transition:opacity .2s}`,
-          );
+          out.push(`${revealed}::after{opacity:0;transition:opacity .2s}`);
         }
       }
 

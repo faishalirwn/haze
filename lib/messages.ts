@@ -8,6 +8,8 @@ export interface CreateRuleMessage {
   reveal: Reveal;
   intensity: number;
   grayscale: boolean;
+  /** Optional regex source for sub-element text redaction. See lib/text.ts. */
+  text?: string;
 }
 
 export type HazeMessage = CreateRuleMessage;

@@ -16,6 +16,13 @@ export interface Rule {
   reveal: Reveal;
   /** Scratchcard overlay color; falls back to the site/global default. */
   bg?: string;
+  /**
+   * Optional regex source. When set, the effect targets only the substrings
+   * matching this pattern inside the matched element (wrapped in spans at
+   * runtime) rather than the whole element - for redacting a rating that lives
+   * as a bare text node in a larger line. See lib/text.ts.
+   */
+  text?: string;
   enabled: boolean;
 }
 

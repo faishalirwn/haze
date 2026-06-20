@@ -8,10 +8,13 @@ import {
   generateCss,
   REVEALED_CLASS,
   SUPPRESSED_CLASS,
+  TEXT_CLASS,
 } from "../lib/css";
 import { hostKey } from "../lib/host";
 import { effectiveRulesFor } from "../lib/rules";
 import { type HazeState, loadState } from "../lib/storage";
+import { unwrapTextMatches, wrapTextMatches } from "../lib/text";
+import type { Rule } from "../lib/types";
 
 const STYLE_ID = "haze-style";
 const INIT_FLAG = "__hazeEngineInit";
@@ -37,6 +40,7 @@ function runEngine(): void {
 
   let clickSelector = "";
   let unionSelector = "";
+  let textRules: Rule[] = [];
   let observer: MutationObserver | null = null;
 
   const style = document.createElement("style");
@@ -76,12 +80,20 @@ function runEngine(): void {
     }
   }
 
+  // Re-wrap text-redaction matches (idempotent; skips already-wrapped spans).
+  function applyTextWrap(): void {
+    for (const r of textRules) {
+      if (r.text) wrapTextMatches(r.selector, r.text, TEXT_CLASS);
+    }
+  }
+
   let debounce = 0;
-  function scheduleContainment(): void {
+  function scheduleWork(): void {
     if (debounce) return;
     debounce = window.setTimeout(() => {
       debounce = 0;
       runContainment();
+      applyTextWrap();
     }, 150);
   }
 
@@ -89,12 +101,18 @@ function runEngine(): void {
     const { rules, defaultBg } = effectiveRulesFor(hostname, state);
     style.textContent = generateCss(rules, defaultBg);
     injectStyle();
-    unionSelector = allSelectorParts(rules).join(",");
+    // Text rules redact substrings, not whole elements, so they're left out of
+    // the element-level containment union.
+    unionSelector = allSelectorParts(rules.filter((r) => !r.text)).join(",");
     clickSelector = clickSelectorParts(rules).join(",");
+    textRules = rules.filter((r) => r.text);
     applyEnabled(state);
     runContainment();
+    // Re-wrap from scratch: old wrappers may belong to rules that just changed.
+    unwrapTextMatches(TEXT_CLASS);
+    applyTextWrap();
     if (!observer) {
-      observer = new MutationObserver(scheduleContainment);
+      observer = new MutationObserver(scheduleWork);
       observer.observe(document.documentElement, {
         childList: true,
         subtree: true,

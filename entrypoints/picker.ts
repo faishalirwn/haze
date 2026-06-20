@@ -7,6 +7,7 @@ import {
   generateSelector,
   matchCount,
 } from "../lib/selector";
+import { unwrapTextMatches, wrapTextMatches } from "../lib/text";
 import {
   DEFAULT_BG,
   DEFAULT_INTENSITY,
@@ -30,9 +31,14 @@ function startPicker(onClose: () => void): void {
   // Two-phase: hover to preview, click to lock. Once locked, the selection is
   // frozen so the user can move to the toolbar and widen/tighten without the
   // mouse re-picking. Clicking another element re-locks.
+  type TextToken = { node: Text; start: number; end: number; numeric: boolean };
+
   let base: Element | null = null;
   let depth = 0;
   let locked = false;
+  let textPick = false;
+  let pendingToken: TextToken | null = null;
+  let previewBeforePick = true;
   let current: Element | null = null;
 
   const host = document.createElement("div");
@@ -54,6 +60,11 @@ function startPicker(onClose: () => void): void {
         border-radius: 3px; transition: all .05s ease-out;
       }
       .box.locked { border-style: solid; background: rgba(240,162,60,0.22); }
+      .tbox {
+        position: fixed; pointer-events: none; z-index: 1; display: none;
+        background: rgba(77,181,255,0.28); outline: 1px solid #4db5ff;
+        border-radius: 2px;
+      }
       .bar {
         position: fixed; left: 50%; bottom: 16px; transform: translateX(-50%);
         z-index: 2; display: flex; flex-direction: column; gap: 8px;
@@ -104,12 +115,17 @@ function startPicker(onClose: () => void): void {
       .bar .hint { color: #9b9183; width: 100%; font-size: 11px; }
     </style>
     <div class="box" id="box"></div>
+    <div class="tbox" id="tbox"></div>
     <div class="bar">
       <div class="row">
         <input class="sel" id="sel" spellcheck="false" placeholder="click an element to start…" />
         <span class="count" id="count"></span>
         <button class="iconbtn" id="up" title="Broaden — select parent (↑)" disabled>▲</button>
         <button class="iconbtn" id="down" title="Narrow — select child (↓)" disabled>▼</button>
+      </div>
+      <div class="row">
+        <input class="sel" id="text" spellcheck="false" placeholder="optional: redact only part of the element — click “Pick text”, then click the text" />
+        <button id="picktext" title="Click the exact text to redact; a pattern is derived for you" disabled>Pick text</button>
       </div>
       <div class="row controls">
         <select id="scope" title="How many elements to match">
@@ -128,13 +144,20 @@ function startPicker(onClose: () => void): void {
         <label class="prev"><input type="checkbox" id="gray" /> Gray</label>
         <label class="prev"><input type="checkbox" id="preview" checked /> Preview</label>
         <span class="spacer"></span>
+        <button id="repick" title="Repick — back to hovering (Esc)" disabled>Repick</button>
         <button class="go" id="create" disabled>Create</button>
         <button id="cancel">Cancel</button>
       </div>
     </div>`;
 
+  // Preview wrappers use a class distinct from the engine's TEXT_CLASS so the
+  // picker never clobbers spans the live engine created for stored rules.
+  const PREVIEW_TEXT_CLASS = "haze-preview-text";
+
   const box = root.getElementById("box") as HTMLDivElement;
+  const tbox = root.getElementById("tbox") as HTMLDivElement;
   const selInput = root.getElementById("sel") as HTMLInputElement;
+  const textInput = root.getElementById("text") as HTMLInputElement;
   const countEl = root.getElementById("count") as HTMLSpanElement;
   const effectSel = root.getElementById("effect") as HTMLSelectElement;
   const revealSel = root.getElementById("reveal") as HTMLSelectElement;
@@ -144,6 +167,8 @@ function startPicker(onClose: () => void): void {
   const upBtn = root.getElementById("up") as HTMLButtonElement;
   const downBtn = root.getElementById("down") as HTMLButtonElement;
   const createBtn = root.getElementById("create") as HTMLButtonElement;
+  const repickBtn = root.getElementById("repick") as HTMLButtonElement;
+  const pickTextBtn = root.getElementById("picktext") as HTMLButtonElement;
 
   function resolveCurrent(): Element | null {
     let el: Element | null = base;
@@ -177,17 +202,24 @@ function startPicker(onClose: () => void): void {
       intensity: DEFAULT_INTENSITY,
       grayscale: grayCb.checked,
       reveal: revealSel.value as Reveal,
+      text: textInput.value.trim() || undefined,
       enabled: true,
     };
   }
 
   function updatePreview(): void {
-    const on = locked && previewCb.checked && selInput.value.trim() !== "";
+    // Rewrap each time so changing the regex/selector re-targets cleanly.
+    unwrapTextMatches(PREVIEW_TEXT_CLASS);
+    const rule = currentRule();
+    const on = locked && previewCb.checked && rule.selector !== "";
     if (on) {
+      if (rule.text)
+        wrapTextMatches(rule.selector, rule.text, PREVIEW_TEXT_CLASS);
       previewStyle.textContent = generateCss(
-        [currentRule()],
+        [rule],
         DEFAULT_BG,
         PREVIEW_CLASS,
+        PREVIEW_TEXT_CLASS,
       );
       document.documentElement.classList.add(PREVIEW_CLASS);
     } else {
@@ -201,6 +233,142 @@ function startPicker(onClose: () => void): void {
     upBtn.disabled = !value;
     downBtn.disabled = !value;
     createBtn.disabled = !value;
+    repickBtn.disabled = !value;
+    pickTextBtn.disabled = !value;
+  }
+
+  // "Pick text": point at the exact text to redact and click it. Uses caret
+  // hit-testing rather than native selection (which sites routinely disable via
+  // user-select), then derives a generalized, context-anchored regex.
+  interface CaretDoc {
+    caretPositionFromPoint?(
+      x: number,
+      y: number,
+    ): { offsetNode: Node; offset: number } | null;
+    caretRangeFromPoint?(x: number, y: number): Range | null;
+  }
+
+  /** The text run under a point: a number (incl. , . separators) or a word. */
+  function caretToken(x: number, y: number): TextToken | null {
+    const doc = document as Document & CaretDoc;
+    let node: Node | null = null;
+    let offset = 0;
+    if (doc.caretPositionFromPoint) {
+      const pos = doc.caretPositionFromPoint(x, y);
+      if (pos) {
+        node = pos.offsetNode;
+        offset = pos.offset;
+      }
+    } else if (doc.caretRangeFromPoint) {
+      const r = doc.caretRangeFromPoint(x, y);
+      if (r) {
+        node = r.startContainer;
+        offset = r.startOffset;
+      }
+    }
+    if (!node || node.nodeType !== Node.TEXT_NODE) return null;
+    const text = node.nodeValue ?? "";
+    const len = text.length;
+    const i = Math.max(0, Math.min(offset, len));
+    const at = (k: number) => text[k] ?? "";
+    const isDigit = (k: number) => k >= 0 && k < len && /[0-9]/.test(at(k));
+    const numeric = isDigit(i) || isDigit(i - 1);
+    const inTok = numeric
+      ? (c: string) => /[0-9.,]/.test(c)
+      : (c: string) => /\S/.test(c) && c !== "•";
+    let start = i;
+    let end = i;
+    while (start > 0 && inTok(at(start - 1))) start--;
+    while (end < len && inTok(at(end))) end++;
+    // Trim separators that ended up on the edges of a number (e.g. "3.5,").
+    if (numeric) {
+      while (end > start && /[.,]/.test(at(end - 1))) end--;
+      while (start < end && /[.,]/.test(at(start))) start++;
+    }
+    if (end <= start) return null;
+    return { node: node as Text, start, end, numeric };
+  }
+
+  const escapeRe = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+  function derivePattern(tok: TextToken): string | null {
+    const text = tok.node.nodeValue ?? "";
+    const token = text.slice(tok.start, tok.end);
+    if (!token) return null;
+    // Numbers generalize so sibling rows (other ratings/counts) match too;
+    // words match literally. Both stay user-editable in the field.
+    const core = tok.numeric ? "[0-9][0-9.,]*" : escapeRe(token);
+    // Anchor by what immediately follows the pick, so a look-alike number
+    // elsewhere on the line (e.g. a publish year vs a page count) is spared.
+    const after = text.slice(tok.end);
+    if (/^\s*$/.test(after)) return `${core}(?=\\s*$)`;
+    const m = after.match(/^\s*([^\s0-9][^\s]*)/);
+    if (m?.[1]) return `${core}(?=\\s*${escapeRe(m[1])})`;
+    return core;
+  }
+
+  function previewTextToken(e: MouseEvent): void {
+    if (!current) return;
+    const tok = caretToken(e.clientX, e.clientY);
+    if (!tok || !current.contains(tok.node)) {
+      pendingToken = null;
+      tbox.style.display = "none";
+      return;
+    }
+    pendingToken = tok;
+    const range = document.createRange();
+    range.setStart(tok.node, tok.start);
+    range.setEnd(tok.node, tok.end);
+    const r = range.getBoundingClientRect();
+    tbox.style.display = "block";
+    tbox.style.left = `${r.left}px`;
+    tbox.style.top = `${r.top}px`;
+    tbox.style.width = `${r.width}px`;
+    tbox.style.height = `${r.height}px`;
+  }
+
+  function finalizeTextToken(): void {
+    const tok = pendingToken;
+    exitTextPick();
+    if (!tok) return;
+    const pattern = derivePattern(tok);
+    if (!pattern) return;
+    textInput.value = pattern;
+    previewCb.checked = true; // now reveal the result
+    updatePreview();
+  }
+
+  function enterTextPick(): void {
+    if (!locked || textPick) return;
+    textPick = true;
+    pickTextBtn.textContent = "Click the text…";
+    // The blur preview makes text unreadable, so suppress it while picking.
+    previewBeforePick = previewCb.checked;
+    previewCb.checked = false;
+    previewCb.disabled = true;
+    updatePreview();
+  }
+
+  function exitTextPick(): void {
+    if (!textPick) return;
+    textPick = false;
+    pickTextBtn.textContent = "Pick text";
+    tbox.style.display = "none";
+    pendingToken = null;
+    previewCb.disabled = false;
+    previewCb.checked = previewBeforePick;
+    updatePreview();
+  }
+
+  // Drop back to hovering without tearing the picker down, so a mis-pick can be
+  // corrected in place. Starting over also clears any text pattern.
+  function unlock(): void {
+    if (!locked) return;
+    exitTextPick();
+    textInput.value = "";
+    setLocked(false);
+    box.classList.remove("locked");
+    updatePreview(); // clears the preview since it's gated on `locked`
   }
 
   function updateCount(selector: string): void {
@@ -209,6 +377,10 @@ function startPicker(onClose: () => void): void {
   }
 
   function onMove(e: MouseEvent): void {
+    if (textPick) {
+      previewTextToken(e);
+      return;
+    }
     if (locked) return;
     const el = document.elementFromPoint(e.clientX, e.clientY);
     if (!el || el === host || host.contains(el)) return;
@@ -220,8 +392,14 @@ function startPicker(onClose: () => void): void {
   function onClick(e: MouseEvent): void {
     // Let toolbar clicks through to their own handlers.
     if (e.target === host || host.contains(e.target as Node)) return;
+    // Always swallow the page click (stops link navigation while picking).
     e.preventDefault();
     e.stopPropagation();
+    // While picking text, this click commits the token under the cursor.
+    if (textPick) {
+      finalizeTextToken();
+      return;
+    }
     const el = document.elementFromPoint(e.clientX, e.clientY);
     if (!el || el === host || host.contains(el)) return;
     base = el;
@@ -244,7 +422,10 @@ function startPicker(onClose: () => void): void {
   function onKey(e: KeyboardEvent): void {
     if (e.key === "Escape") {
       e.preventDefault();
-      teardown();
+      // Escape backs out one step: text-pick → locked → hovering → closed.
+      if (textPick) exitTextPick();
+      else if (locked) unlock();
+      else teardown();
     } else if (e.key === "ArrowUp") {
       e.preventDefault();
       widen();
@@ -267,6 +448,7 @@ function startPicker(onClose: () => void): void {
       reveal: revealSel.value as Reveal,
       intensity: DEFAULT_INTENSITY,
       grayscale: grayCb.checked,
+      text: textInput.value.trim() || undefined,
     };
     teardown();
     try {
@@ -289,10 +471,12 @@ function startPicker(onClose: () => void): void {
   }
 
   function teardown(): void {
+    exitTextPick();
     document.removeEventListener("mousemove", onMove, true);
     document.removeEventListener("keydown", onKey, true);
     document.removeEventListener("click", onClick, true);
     document.documentElement.classList.remove(PREVIEW_CLASS);
+    unwrapTextMatches(PREVIEW_TEXT_CLASS);
     previewStyle.remove();
     host.remove();
     onClose();
@@ -301,6 +485,8 @@ function startPicker(onClose: () => void): void {
   upBtn.addEventListener("click", widen);
   downBtn.addEventListener("click", tighten);
   createBtn.addEventListener("click", create);
+  repickBtn.addEventListener("click", unlock);
+  pickTextBtn.addEventListener("click", enterTextPick);
   scopeSel.addEventListener("change", refresh);
   effectSel.addEventListener("change", updatePreview);
   revealSel.addEventListener("change", updatePreview);
@@ -311,6 +497,7 @@ function startPicker(onClose: () => void): void {
     updateCount(selInput.value.trim());
     updatePreview();
   });
+  textInput.addEventListener("input", updatePreview);
 
   document.addEventListener("mousemove", onMove, true);
   document.addEventListener("keydown", onKey, true);

@@ -34,6 +34,7 @@ export function communityRulesFor(hostname: string, state: HazeState): Rule[] {
             grayscale: cr.grayscale ?? false,
             reveal: "hover",
             bg: site.bg ?? DEFAULT_BG,
+            text: cr.text,
             enabled: true,
           };
       // enable state is tracked separately from the edit, so they never desync

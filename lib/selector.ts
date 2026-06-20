@@ -178,9 +178,29 @@ export function generateSelector(el: Element): string {
 }
 
 /**
+ * Recover the stable, human-readable local name from a CSS-modules class so a
+ * generalized selector can target it via `[class*="..."]`. CSS-modules names
+ * look like `HomeBanner_metaRating__M_3UA`: a readable `File_localName` head
+ * plus a build hash after `__`. Only the hash changes between deploys, so the
+ * head's last segment (`metaRating`) is a durable anchor. Returns null unless
+ * the tell-tale `name__hash` shape is present, to avoid emitting raw hashes.
+ */
+export function cssModuleToken(cls: string): string | null {
+  if (isStateClass(cls)) return null;
+  const dbl = cls.lastIndexOf("__");
+  if (dbl <= 0) return null;
+  const head = cls.slice(0, dbl);
+  const words = head
+    .split(/[_-]+/)
+    .filter((s) => /^[a-z][a-z]+$/i.test(s) && s.length >= 4);
+  return words.pop() ?? null;
+}
+
+/**
  * A broad, NON-unique selector that matches every element like this one - its
  * stable classes (e.g. `.media-card-rating`), so one pick can blur a whole grid.
- * Falls back to a shared attribute, then the bare tag.
+ * Falls back to a shared attribute, then a CSS-modules prefix match, then the
+ * bare tag.
  */
 export function generalizedSelector(el: Element): string {
   const classes = stableClasses(el);
@@ -188,6 +208,19 @@ export function generalizedSelector(el: Element): string {
   for (const attr of TEST_ATTRS) {
     const val = el.getAttribute(attr);
     if (val) return `${el.tagName.toLowerCase()}[${attr}="${CSS.escape(val)}"]`;
+  }
+  // CSS-in-JS: every class is hashed, but the readable prefix is stable.
+  // AND the recovered tokens together so siblings sharing a generic class
+  // (e.g. metaItem) but not the specific one (metaRating) are excluded.
+  const tokens = [
+    ...new Set(
+      Array.from(el.classList)
+        .map(cssModuleToken)
+        .filter((t): t is string => t !== null),
+    ),
+  ];
+  if (tokens.length) {
+    return tokens.map((t) => `[class*="${CSS.escape(t)}"]`).join("");
   }
   return el.tagName.toLowerCase();
 }

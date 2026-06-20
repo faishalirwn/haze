@@ -113,6 +113,7 @@ async function handleCreateRule(
     grayscale: msg.grayscale,
     reveal: msg.reveal,
     bg: DEFAULT_BG,
+    text: msg.text,
     enabled: true,
   };
   await addUserRule(key, rule);
