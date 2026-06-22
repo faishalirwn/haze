@@ -1,5 +1,6 @@
 import { browser } from "wxt/browser";
 import { defineUnlistedScript } from "wxt/utils/define-unlisted-script";
+import { anchorMatches, labelOf } from "../lib/anchor";
 import { generateCss, PREVIEW_CLASS } from "../lib/css";
 import type { CreateRuleMessage, CreateRuleResponse } from "../lib/messages";
 import {
@@ -127,6 +128,10 @@ function startPicker(onClose: () => void): void {
         <input class="sel" id="text" spellcheck="false" placeholder="optional: redact only part of the element — click “Pick text”, then click the text" />
         <button id="picktext" title="Click the exact text to redact; a pattern is derived for you" disabled>Pick text</button>
       </div>
+      <div class="row" id="anchorrow" style="display:none">
+        <label class="prev"><input type="checkbox" id="anchor" /> Match by label</label>
+        <input class="sel" id="label" spellcheck="false" placeholder="label text — matches only values under this label" />
+      </div>
       <div class="row controls">
         <select id="scope" title="How many elements to match">
           <option value="similar">All similar</option>
@@ -153,6 +158,8 @@ function startPicker(onClose: () => void): void {
   // Preview wrappers use a class distinct from the engine's TEXT_CLASS so the
   // picker never clobbers spans the live engine created for stored rules.
   const PREVIEW_TEXT_CLASS = "haze-preview-text";
+  // Marker for label-anchored matches in the live preview (engine-independent).
+  const PREVIEW_ANCHOR_CLASS = "haze-preview-anchor";
 
   const box = root.getElementById("box") as HTMLDivElement;
   const tbox = root.getElementById("tbox") as HTMLDivElement;
@@ -169,11 +176,73 @@ function startPicker(onClose: () => void): void {
   const createBtn = root.getElementById("create") as HTMLButtonElement;
   const repickBtn = root.getElementById("repick") as HTMLButtonElement;
   const pickTextBtn = root.getElementById("picktext") as HTMLButtonElement;
+  const anchorRow = root.getElementById("anchorrow") as HTMLDivElement;
+  const anchorCb = root.getElementById("anchor") as HTMLInputElement;
+  const labelInput = root.getElementById("label") as HTMLInputElement;
 
   function resolveCurrent(): Element | null {
     let el: Element | null = base;
     for (let i = 0; i < depth && el; i++) el = el.parentElement;
     return el;
+  }
+
+  // Replaced/embedded elements that render their own content (vs. layout boxes).
+  const CONTENT_TAGS = new Set([
+    "IMG",
+    "VIDEO",
+    "CANVAS",
+    "SVG",
+    "PICTURE",
+    "IFRAME",
+    "OBJECT",
+    "EMBED",
+    "INPUT",
+    "TEXTAREA",
+    "SELECT",
+    "AUDIO",
+  ]);
+
+  // Does this element render something itself, rather than being a bare box?
+  // Used to favor real targets over equally-sized empty overlays/containers.
+  function isContentful(el: Element): boolean {
+    if (CONTENT_TAGS.has(el.tagName.toUpperCase())) return true;
+    for (const n of el.childNodes) {
+      if (n.nodeType === Node.TEXT_NODE && (n.nodeValue ?? "").trim())
+        return true;
+    }
+    return getComputedStyle(el).backgroundImage !== "none";
+  }
+
+  // Hit-test through the whole z-stack, not just the topmost element. Full-size
+  // hover overlays / click-catchers (common in card UIs) otherwise mask the
+  // specific thing beneath them, so the picker would only ever see the overlay.
+  // Prefer content-bearing elements over empty boxes, then the smallest box:
+  // the rating badge wins over the scrim, while a poster image still wins over
+  // its equally-sized transparent container.
+  function pickAt(x: number, y: number): Element | null {
+    const stack = (document.elementsFromPoint(x, y) as Element[]).filter(
+      (el) => el !== host && !host.contains(el),
+    );
+    let best: Element | null = null;
+    let bestContent = false;
+    let bestArea = Number.POSITIVE_INFINITY;
+    for (const el of stack) {
+      const r = el.getBoundingClientRect();
+      const area = r.width * r.height;
+      if (area <= 0) continue;
+      const content = isContentful(el);
+      // Content beats non-content; within the same class, smaller box wins.
+      const better =
+        best === null ||
+        (content && !bestContent) ||
+        (content === bestContent && area < bestArea);
+      if (better) {
+        best = el;
+        bestContent = content;
+        bestArea = area;
+      }
+    }
+    return best;
   }
 
   function refresh(): void {
@@ -190,8 +259,43 @@ function startPicker(onClose: () => void): void {
         ? generalizedSelector(current)
         : generateSelector(current);
     selInput.value = selector;
-    updateCount(selector);
+    syncAnchorUI();
+    updateCount();
     updatePreview();
+  }
+
+  // The label to anchor by right now, or null when anchoring is off/blank.
+  function activeLabel(): string | null {
+    if (!anchorCb.checked) return null;
+    return labelInput.value.trim() || null;
+  }
+
+  // Anchoring narrows a broad "all similar" set by label; it's meaningless on a
+  // unique "this one" selector, so scope is pinned to similar while it's on.
+  function syncAnchorScope(): void {
+    if (anchorCb.checked) {
+      scopeSel.value = "similar";
+      scopeSel.disabled = true;
+    } else {
+      scopeSel.disabled = false;
+    }
+  }
+
+  // Offer the "match by label" control only when the current element sits in a
+  // `Label: value` row; prefill the detected label until the user commits.
+  function syncAnchorUI(): void {
+    const detected = current ? labelOf(current) : null;
+    if (detected) {
+      anchorRow.style.display = "";
+      anchorCb.disabled = false;
+      if (!anchorCb.checked) labelInput.value = detected;
+    } else {
+      anchorRow.style.display = "none";
+      anchorCb.checked = false;
+      anchorCb.disabled = true;
+      labelInput.value = "";
+    }
+    syncAnchorScope();
   }
 
   function currentRule(): Rule {
@@ -203,20 +307,35 @@ function startPicker(onClose: () => void): void {
       grayscale: grayCb.checked,
       reveal: revealSel.value as Reveal,
       text: textInput.value.trim() || undefined,
+      label: activeLabel() ?? undefined,
       enabled: true,
     };
+  }
+
+  function clearPreviewAnchor(): void {
+    for (const el of document.querySelectorAll(`.${PREVIEW_ANCHOR_CLASS}`))
+      el.classList.remove(PREVIEW_ANCHOR_CLASS);
   }
 
   function updatePreview(): void {
     // Rewrap each time so changing the regex/selector re-targets cleanly.
     unwrapTextMatches(PREVIEW_TEXT_CLASS);
+    clearPreviewAnchor();
     const rule = currentRule();
     const on = locked && previewCb.checked && rule.selector !== "";
     if (on) {
-      if (rule.text)
-        wrapTextMatches(rule.selector, rule.text, PREVIEW_TEXT_CLASS);
+      // Anchored rules can't be expressed in CSS, so tag the JS-resolved
+      // matches with a marker class and preview against that instead.
+      let sel = rule.selector;
+      if (rule.label) {
+        for (const el of anchorMatches(rule.selector, rule.label))
+          el.classList.add(PREVIEW_ANCHOR_CLASS);
+        sel = `.${PREVIEW_ANCHOR_CLASS}`;
+      }
+      const effRule = { ...rule, selector: sel };
+      if (effRule.text) wrapTextMatches(sel, effRule.text, PREVIEW_TEXT_CLASS);
       previewStyle.textContent = generateCss(
-        [rule],
+        [effRule],
         DEFAULT_BG,
         PREVIEW_CLASS,
         PREVIEW_TEXT_CLASS,
@@ -371,8 +490,12 @@ function startPicker(onClose: () => void): void {
     updatePreview(); // clears the preview since it's gated on `locked`
   }
 
-  function updateCount(selector: string): void {
-    const n = matchCount(selector);
+  function updateCount(): void {
+    const selector = selInput.value.trim();
+    const label = activeLabel();
+    const n = label
+      ? anchorMatches(selector, label).length
+      : matchCount(selector);
     countEl.textContent = `${n} match${n === 1 ? "" : "es"}`;
   }
 
@@ -382,8 +505,8 @@ function startPicker(onClose: () => void): void {
       return;
     }
     if (locked) return;
-    const el = document.elementFromPoint(e.clientX, e.clientY);
-    if (!el || el === host || host.contains(el)) return;
+    const el = pickAt(e.clientX, e.clientY);
+    if (!el) return;
     base = el;
     depth = 0;
     refresh();
@@ -400,10 +523,11 @@ function startPicker(onClose: () => void): void {
       finalizeTextToken();
       return;
     }
-    const el = document.elementFromPoint(e.clientX, e.clientY);
-    if (!el || el === host || host.contains(el)) return;
+    const el = pickAt(e.clientX, e.clientY);
+    if (!el) return;
     base = el;
     depth = 0;
+    anchorCb.checked = false; // each fresh pick starts unanchored
     setLocked(true);
     refresh();
   }
@@ -449,6 +573,7 @@ function startPicker(onClose: () => void): void {
       intensity: DEFAULT_INTENSITY,
       grayscale: grayCb.checked,
       text: textInput.value.trim() || undefined,
+      label: activeLabel() ?? undefined,
     };
     teardown();
     try {
@@ -477,6 +602,7 @@ function startPicker(onClose: () => void): void {
     document.removeEventListener("click", onClick, true);
     document.documentElement.classList.remove(PREVIEW_CLASS);
     unwrapTextMatches(PREVIEW_TEXT_CLASS);
+    clearPreviewAnchor();
     previewStyle.remove();
     host.remove();
     onClose();
@@ -492,9 +618,17 @@ function startPicker(onClose: () => void): void {
   revealSel.addEventListener("change", updatePreview);
   grayCb.addEventListener("change", updatePreview);
   previewCb.addEventListener("change", updatePreview);
+  anchorCb.addEventListener("change", () => {
+    syncAnchorScope();
+    refresh();
+  });
+  labelInput.addEventListener("input", () => {
+    updateCount();
+    updatePreview();
+  });
   root.getElementById("cancel")?.addEventListener("click", teardown);
   selInput.addEventListener("input", () => {
-    updateCount(selInput.value.trim());
+    updateCount();
     updatePreview();
   });
   textInput.addEventListener("input", updatePreview);

@@ -23,6 +23,14 @@ export interface Rule {
    * as a bare text node in a larger line. See lib/text.ts.
    */
   text?: string;
+  /**
+   * Optional label anchor. When set, the rule matches only those `selector`
+   * elements immediately preceded by a label whose text is this string (the
+   * `Label: value` row shape) - the only reliable way to target one field on
+   * sites where every value shares the same classes. Resolved in JS by the
+   * engine, not via CSS. See lib/anchor.ts.
+   */
+  label?: string;
   enabled: boolean;
 }
 

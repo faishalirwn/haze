@@ -10,6 +10,8 @@ export interface CreateRuleMessage {
   grayscale: boolean;
   /** Optional regex source for sub-element text redaction. See lib/text.ts. */
   text?: string;
+  /** Optional label anchor for `Label: value` rows. See lib/anchor.ts. */
+  label?: string;
 }
 
 export type HazeMessage = CreateRuleMessage;

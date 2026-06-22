@@ -163,6 +163,21 @@ function ruleRow(rule: Rule, onChange: () => void): HTMLElement {
     onChange();
   };
 
+  // Label anchor (lib/anchor.ts): only shown for rules that already have one,
+  // since anchors are created via the picker. Clearing it reverts to plain CSS.
+  let labelEl: HTMLInputElement | null = null;
+  if (rule.label !== undefined) {
+    labelEl = el<HTMLInputElement>("input", "label");
+    labelEl.value = rule.label;
+    labelEl.spellcheck = false;
+    labelEl.placeholder = "label";
+    labelEl.title = "Matches only values under this label";
+    labelEl.onchange = () => {
+      rule.label = labelEl?.value.trim() || undefined;
+      onChange();
+    };
+  }
+
   const effect = select(["blur", "scratchcard", "both"], rule.effect, (v) => {
     rule.effect = v as Effect;
     onChange();
@@ -183,8 +198,9 @@ function ruleRow(rule: Rule, onChange: () => void): HTMLElement {
     onChange();
   });
 
+  row.append(sel);
+  if (labelEl) row.append(labelEl);
   row.append(
-    sel,
     effect,
     intensity,
     reveal,

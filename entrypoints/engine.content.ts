@@ -1,5 +1,6 @@
 import { browser } from "wxt/browser";
 import { defineContentScript } from "wxt/utils/define-content-script";
+import { anchorClass, anchorMatches } from "../lib/anchor";
 import { COMMUNITY_MATCHES } from "../lib/community-hosts";
 import {
   ACTIVE_CLASS,
@@ -41,6 +42,7 @@ function runEngine(): void {
   let clickSelector = "";
   let unionSelector = "";
   let textRules: Rule[] = [];
+  let anchorRules: Rule[] = [];
   let observer: MutationObserver | null = null;
 
   const style = document.createElement("style");
@@ -87,11 +89,32 @@ function runEngine(): void {
     }
   }
 
+  // Tag label-anchored matches with their per-rule marker class so the CSS
+  // pipeline (which only speaks selectors) can style them. Re-run on mutation
+  // since cards stream in lazily; clearing first keeps it idempotent.
+  function applyAnchors(): void {
+    for (const r of anchorRules) {
+      if (!r.label) continue;
+      const cls = anchorClass(r.id);
+      for (const el of document.querySelectorAll(`.${cls}`))
+        el.classList.remove(cls);
+      for (const el of anchorMatches(r.selector, r.label))
+        el.classList.add(cls);
+    }
+  }
+
+  // An anchored rule's real CSS target is its marker class, not its raw
+  // selector (which would match every same-classed value, ignoring the label).
+  function asCssRule(r: Rule): Rule {
+    return r.label ? { ...r, selector: `.${anchorClass(r.id)}` } : r;
+  }
+
   let debounce = 0;
   function scheduleWork(): void {
     if (debounce) return;
     debounce = window.setTimeout(() => {
       debounce = 0;
+      applyAnchors();
       runContainment();
       applyTextWrap();
     }, 150);
@@ -99,14 +122,19 @@ function runEngine(): void {
 
   function rebuild(state: HazeState): void {
     const { rules, defaultBg } = effectiveRulesFor(hostname, state);
-    style.textContent = generateCss(rules, defaultBg);
+    // Anchored rules are matched in JS; everywhere downstream we use their
+    // marker class so the CSS, containment, click and text paths stay pure CSS.
+    anchorRules = rules.filter((r) => r.label);
+    const cssRules = rules.map(asCssRule);
+    style.textContent = generateCss(cssRules, defaultBg);
     injectStyle();
     // Text rules redact substrings, not whole elements, so they're left out of
     // the element-level containment union.
-    unionSelector = allSelectorParts(rules.filter((r) => !r.text)).join(",");
-    clickSelector = clickSelectorParts(rules).join(",");
-    textRules = rules.filter((r) => r.text);
+    unionSelector = allSelectorParts(cssRules.filter((r) => !r.text)).join(",");
+    clickSelector = clickSelectorParts(cssRules).join(",");
+    textRules = cssRules.filter((r) => r.text);
     applyEnabled(state);
+    applyAnchors();
     runContainment();
     // Re-wrap from scratch: old wrappers may belong to rules that just changed.
     unwrapTextMatches(TEXT_CLASS);

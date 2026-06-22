@@ -125,6 +125,16 @@ h2 {
 .rule .sel[readonly] {
   opacity: 0.8;
 }
+.rule .label {
+  flex: 0 1 120px;
+  min-width: 90px;
+  font-size: 12px;
+  background: var(--panel2);
+  color: var(--text);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 6px 8px;
+}
 .rule select,
 .rule input.num {
   background: var(--panel2);
