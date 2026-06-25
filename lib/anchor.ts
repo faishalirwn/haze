@@ -7,17 +7,30 @@
 // per-rule marker class its normal CSS pipeline then styles, the same indirection
 // the text-redaction feature uses. See docs/DESIGN.md §3d.
 
-/** Strip a single trailing colon (ASCII or fullwidth) plus surrounding space. */
+/** Longest a label may be; beyond this it's prose, not a field name. */
+const MAX_LABEL_LEN = 40;
+
+/**
+ * Normalize a candidate label: collapse internal whitespace, drop a single
+ * trailing colon (ASCII or fullwidth, e.g. `Score:`). Returns null when it's
+ * empty or too long to plausibly be a field name - so prose siblings aren't
+ * mistaken for labels, while colon-less labels (`Mean Score`) still qualify.
+ */
 function asLabel(text: string): string | null {
-  const m = text.trim().match(/^(.+?)\s*[:：]\s*$/);
-  return m?.[1] ?? null;
+  const t = text
+    .replace(/\s+/g, " ")
+    .trim()
+    .replace(/[:：]$/, "")
+    .trim();
+  if (!t || t.length > MAX_LABEL_LEN) return null;
+  return t;
 }
 
 /**
- * The label text that anchors `el`, or null. A label is the immediately
- * preceding element sibling whose text ends in a colon (e.g. `Score:`).
- * Requiring the colon keeps detection precise, so an ordinary preceding sibling
- * isn't mistaken for a label.
+ * The label text that anchors `el`, or null: the normalized text of the
+ * immediately preceding element sibling (typically a `type`/`label` cell in a
+ * label/value row). A trailing colon is optional, so both `Score:` and
+ * `Mean Score` work; the length bound keeps ordinary content from qualifying.
  */
 export function labelOf(el: Element): string | null {
   const prev = el.previousElementSibling;
